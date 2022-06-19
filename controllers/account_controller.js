@@ -32,7 +32,9 @@ const getAccountList = async (req, res) => {
     const dates = Object.keys(lists);
     let totals = [];
     dates.forEach((date) => {
-      totalArr = lists[date].map((item) => item.amount);
+      totalArr = lists[date].map((item) =>
+        item.type_id === 0 ? item.amount : -1 * item.amount
+      );
       let total = totalArr.reduce(
         (previousValue, currentValue) => previousValue + currentValue,
         0
@@ -44,7 +46,7 @@ const getAccountList = async (req, res) => {
     for (let i = 0; i < dates.length; i++) {
       const details = lists[dates[i]].map((item) => {
         return {
-          amount: item.amount,
+          amount: item.type_id === 0 ? item.amount : -1 * item.amount,
           tag: item.tag,
           note: item.note,
         };
