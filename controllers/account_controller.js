@@ -1,4 +1,5 @@
 const Account = require("../models/account_model");
+const _ = require("lodash");
 
 const createAccount = async (req, res) => {
   const { bookId, userId, typeId, tagId, amount, date, split, note } = req.body;
@@ -8,7 +9,7 @@ const createAccount = async (req, res) => {
     type_id: parseInt(typeId),
     tag_id: parseInt(tagId),
     amount: parseInt(amount),
-    date: date,
+    date: date.slice(0, 10),
     split: split,
     split_status: 0,
     note: note,
@@ -21,7 +22,46 @@ const createAccount = async (req, res) => {
   }
 };
 
-const getAccountList = async (req, res) => {};
+const getAccountList = async (req, res) => {
+  try {
+    const userId = req.query.userId;
+    const bookId = req.query.bookId;
+    const response = await Account.getAccountList(userId, bookId);
+    console.log(response);
+    const lists = await _.groupBy(response, (r) => r.date);
+    const dates = Object.keys(lists);
+    let totals = [];
+    dates.forEach((date) => {
+      totalArr = lists[date].map((item) => item.amount);
+      let total = totalArr.reduce(
+        (previousValue, currentValue) => previousValue + currentValue,
+        0
+      );
+      totals.push(total);
+    });
+
+    const accounts = [];
+    for (let i = 0; i < dates.length; i++) {
+      const details = lists[dates[i]].map((item) => {
+        return {
+          amount: item.amount,
+          tag: item.tag,
+          note: item.note,
+        };
+      });
+
+      let data = {
+        date: dates[i],
+        total: totals[i],
+        details: details,
+      };
+      accounts.push(data);
+    }
+    return res.status(200).send({ data: accounts });
+  } catch (err) {
+    console.log(err);
+  }
+};
 
 module.exports = {
   createAccount,
