@@ -7,7 +7,10 @@ const cors = require("cors");
 app.use(express.json());
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use("/api/" + API_VERSION, [require("./routes/account_route")]);
+app.use("/api/" + API_VERSION, [
+  require("./routes/account_route"),
+  require("./routes/balance_route"),
+]);
 // Error handling
 app.use(function (err, req, res, next) {
   console.log(err);
