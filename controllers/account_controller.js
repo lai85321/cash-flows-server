@@ -90,7 +90,7 @@ const getAccountList = async (req, res) => {
       });
 
       let data = {
-        date: dates[i],
+        date: dates[i].slice(4, 10),
         total: totals[i],
         details: details,
       };
