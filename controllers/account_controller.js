@@ -14,7 +14,7 @@ const createAccount = async (req, res) => {
     split,
     note,
     paidId,
-    paymethod,
+    splits,
   } = req.body;
   const data = {
     book_id: parseInt(bookId),
@@ -32,22 +32,18 @@ const createAccount = async (req, res) => {
     if (split === 1) {
       const members = await Member.getMemberList(parseInt(bookId));
       const memberIds = members.map((item) => item.id);
-      let splits = [];
+
       let balance = [];
-      if (paymethod === "equally") {
-        splits = memberIds.map(
-          (item) =>
-            +Number.parseFloat(parseInt(amount) / memberIds.length).toFixed(2)
-        );
-        balance = [...splits];
-        const sum = splits.reduce(
-          (previousValue, currentValue) =>
-            previousValue + Number.parseFloat(currentValue),
-          0
-        );
-        const idx = memberIds.findIndex((item) => item === parseInt(paidId));
-        balance[idx] = (sum - splits[idx]) * -1;
-      }
+
+      balance = [...splits];
+      const sum = splits.reduce(
+        (previousValue, currentValue) =>
+          previousValue + Number.parseFloat(currentValue),
+        0
+      );
+      const idx = memberIds.findIndex((item) => item === parseInt(paidId));
+      balance[idx] = (sum - splits[idx]) * -1;
+
       const splitData = splits.map((item, idx) => {
         return [accountId, memberIds[idx], splits[idx], balance[idx]];
       });
