@@ -13,7 +13,7 @@ const getAccountList = async (userId, bookId) => {
 };
 
 const getLastWeekTotal = async (bookId, date) => {
-  const sql = `SELECT Date(date) as date, sum(amount) as total from cash_flows.account where book_id = ? && TO_DAYS(NOW()) - TO_DAYS(date) < 4 group by date;
+  const sql = `SELECT convert_tz(date,'+00:00','+08:00') as date, sum(amount) as total from cash_flows.account where book_id = ? && TO_DAYS(NOW()) - TO_DAYS(date) < 4 group by date;
   `;
   const bind = [bookId, date];
   const result = await sqlBind(sql, bind);
