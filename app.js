@@ -11,6 +11,7 @@ app.use("/api/" + API_VERSION, [
   require("./routes/account_route"),
   require("./routes/balance_route"),
   require("./routes/dashboard_route"),
+  require("./routes/user_route"),
 ]);
 // Error handling
 app.use(function (err, req, res, next) {
