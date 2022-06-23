@@ -34,7 +34,6 @@ const createAccount = async (req, res) => {
       const memberIds = members.map((item) => item.id);
 
       let balance = [];
-
       balance = [...splits];
       const sum = splits.reduce(
         (previousValue, currentValue) =>
@@ -60,7 +59,27 @@ const getAccountList = async (req, res) => {
   try {
     const userId = req.query.userId;
     const bookId = req.query.bookId;
-    const response = await Account.getAccountList(userId, bookId);
+    let startTime = new Date(req.query.startTime);
+    let endTime = new Date(req.query.startTime);
+    endTime.setMonth(startTime.getMonth() + 1);
+    startTime = startTime.toJSON().slice(0, 10);
+    endTime = endTime.toJSON().slice(0, 10);
+    const overview = await Account.getOverview(
+      userId,
+      bookId,
+      startTime,
+      endTime
+    );
+    const income = overview[0].total;
+    let expense = overview[1].total;
+    expense = -1 * expense;
+    const balance = income + expense;
+    const response = await Account.getAccountList(
+      userId,
+      bookId,
+      startTime,
+      endTime
+    );
     const lists = await _.groupBy(response, (r) => r.date);
     const dates = Object.keys(lists);
     let totals = [];
@@ -92,7 +111,13 @@ const getAccountList = async (req, res) => {
       };
       accounts.push(data);
     }
-    return res.status(200).send({ data: accounts });
+    const dataObj = {
+      income: income,
+      expense: expense,
+      balance: balance,
+      daily: accounts,
+    };
+    return res.status(200).send({ data: dataObj });
   } catch (err) {
     console.log(err);
   }

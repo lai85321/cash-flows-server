@@ -16,7 +16,6 @@ const getSingleDailyChart = async (req, res) => {
     for (let i = 0; i < dailyData.length; i++) {
       dailyData[i].date = dailyData[i].date.toJSON().slice(5, 10);
     }
-    console.log(dailyData);
     const dailyObj = await _.groupBy(dailyData, (r) => r.date);
     let totals = [];
     for (let i = 0; i < dates.length; i++) {
@@ -26,8 +25,6 @@ const getSingleDailyChart = async (req, res) => {
         totals.push(0);
       }
     }
-    console.log(dates);
-    console.log(totals);
     const data = dates.map((date, idx) => {
       return {
         date: date,

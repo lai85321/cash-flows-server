@@ -5,9 +5,16 @@ const createAccount = async (account) => {
   return result.insertId;
 };
 
-const getAccountList = async (userId, bookId) => {
-  const sql = `SELECT account.*, tag.tag FROM account INNER JOIN tag ON account.tag_id=tag.id WHERE account.user_id = ? and account.book_id =?  order by account.date DESC `;
-  const bind = [userId, bookId];
+const getOverview = async (userId, bookId, startTime, endTime) => {
+  const sql = `SELECT type_id, sum(amount) as total FROM account WHERE user_id = ? and book_id =? and date between ? and ? group by type_id`;
+  const bind = [userId, bookId, startTime, endTime];
+  const result = await sqlBind(sql, bind);
+  return result;
+};
+
+const getAccountList = async (userId, bookId, startTime, endTime) => {
+  const sql = `SELECT account.*, tag.tag FROM account INNER JOIN tag ON account.tag_id=tag.id WHERE account.user_id = ? and account.book_id =? and date between ? and ? order by account.date DESC`;
+  const bind = [userId, bookId, startTime, endTime];
   const result = await sqlBind(sql, bind);
   return result;
 };
@@ -22,6 +29,7 @@ const getLastWeekTotal = async (bookId, date) => {
 
 module.exports = {
   createAccount,
+  getOverview,
   getAccountList,
   getLastWeekTotal,
 };
