@@ -1,6 +1,6 @@
 function dfs(i, amounts, step, list) {
   if (i === amounts.length) {
-    if (step < minStep) {
+    if (step <= minStep) {
       balanceList = [...list];
     }
     minStep = Math.min(minStep, step);
