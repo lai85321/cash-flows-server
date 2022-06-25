@@ -1,7 +1,8 @@
 const sqlBind = require("../util/sqlBind");
 
 const createBook = async (book) => {
- 
+    const result = await sqlBind(`INSERT INTO book SET ?`, book);
+    return result.insertId;
 };
 
 const getBookList = async (userId) => {
