@@ -10,6 +10,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/api/" + API_VERSION, [
   require("./routes/account_route"),
   require("./routes/balance_route"),
+  require("./routes/book_route"),
   require("./routes/dashboard_route"),
   require("./routes/user_route"),
 ]);
