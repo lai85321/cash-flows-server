@@ -27,9 +27,17 @@ const getLastWeekTotal = async (bookId, date) => {
   return result;
 };
 
+const getMonthTagPie = async (bookId, startTime, endTime) => {
+  const sql = `SELECT  tag.tag, sum(account.amount) as total FROM account INNER JOIN tag ON account.tag_id= tag.id WHERE book_id =? and date between ? and ? group by tag_id`;
+  const bind = [ bookId, startTime, endTime];
+  const result = await sqlBind(sql, bind);
+  return result;
+};
+
 module.exports = {
   createAccount,
   getOverview,
   getAccountList,
   getLastWeekTotal,
+  getMonthTagPie,
 };

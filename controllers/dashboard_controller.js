@@ -37,7 +37,21 @@ const getSingleDailyChart = async (req, res) => {
     console.log(err);
   }
 };
-
+const getSingleTagPieChart = async(req, res)=>{
+  try{
+    const bookId = req.query.bookId;
+    let startTime = new Date(req.query.startTime);
+    let endTime = new Date(req.query.startTime);
+    endTime.setMonth(startTime.getMonth() + 1);
+    startTime = startTime.toJSON().slice(0, 10);
+    endTime = endTime.toJSON().slice(0, 10);
+    const tagData = await Account.getMonthTagPie(bookId, startTime, endTime);  
+    return res.status(200).send({data: tagData})
+  } catch (err) {
+    console.log(err);
+  }
+}
 module.exports = {
   getSingleDailyChart,
+  getSingleTagPieChart,
 };
