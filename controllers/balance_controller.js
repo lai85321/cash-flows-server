@@ -44,9 +44,7 @@ const getGroupBalanceList = async (req, res) => {
     const users = response.map((item) => item.name);
     const amount = response.map((item) => item.balance);
     const split = balance(amount);
-    console.log(split);
     const userIdx = userIds.findIndex((item) => item === parseInt(userId));
-    console.log(userIdx);
     let hash = {};
     let userBalance = [];
     split.forEach((item, index) => {
@@ -73,7 +71,7 @@ const getGroupBalanceList = async (req, res) => {
         userBalance.push(`Owe ${lendName} ${amount}`);
       }
       if (lendId === userIds[userIdx]) {
-        userBalance.push(`Lend ${oweName} ${amount}`);
+        userBalance.push(`Get back from ${oweName} ${amount}`);
       }
     });
     const data = userIds.map((item, index) => {
