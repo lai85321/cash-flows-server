@@ -24,7 +24,6 @@ const createAccount = async (req, res) => {
     amount: parseInt(amount),
     date: date.slice(0, 10),
     split: split,
-    split_status: 0,
     note: note,
   };
   try {
@@ -44,7 +43,14 @@ const createAccount = async (req, res) => {
       balance[idx] = (sum - splits[idx]) * -1;
 
       const splitData = splits.map((item, idx) => {
-        return [accountId, memberIds[idx], splits[idx], balance[idx]];
+        return [
+          accountId,
+          parseInt(paidId),
+          memberIds[idx],
+          splits[idx],
+          balance[idx],
+          0,
+        ];
       });
       await Split.createSplit(splitData);
     }
