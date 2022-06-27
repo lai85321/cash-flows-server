@@ -12,7 +12,7 @@ const getSingleDailyChart = async (req, res) => {
   const dates = datesDesc.reverse();
 
   try {
-    const dailyData = await Account.getLastWeekTotal(bookId, today);
+    const dailyData = await Account.getLastWeekTotal(bookId);
     for (let i = 0; i < dailyData.length; i++) {
       dailyData[i].date = dailyData[i].date.toJSON().slice(5, 10);
     }
@@ -37,20 +37,20 @@ const getSingleDailyChart = async (req, res) => {
     console.log(err);
   }
 };
-const getSingleTagPieChart = async(req, res)=>{
-  try{
+const getSingleTagPieChart = async (req, res) => {
+  try {
     const bookId = req.query.bookId;
     let startTime = new Date(req.query.startTime);
     let endTime = new Date(req.query.startTime);
     endTime.setMonth(startTime.getMonth() + 1);
     startTime = startTime.toJSON().slice(0, 10);
     endTime = endTime.toJSON().slice(0, 10);
-    const tagData = await Account.getMonthTagPie(bookId, startTime, endTime);  
-    return res.status(200).send({data: tagData})
+    const tagData = await Account.getMonthTagPie(bookId, startTime, endTime);
+    return res.status(200).send({ data: tagData });
   } catch (err) {
     console.log(err);
   }
-}
+};
 module.exports = {
   getSingleDailyChart,
   getSingleTagPieChart,

@@ -19,17 +19,18 @@ const getAccountList = async (userId, bookId, startTime, endTime) => {
   return result;
 };
 
-const getLastWeekTotal = async (bookId, date) => {
-  const sql = `SELECT convert_tz(date,'+00:00','+08:00') as date, sum(amount) as total from cash_flows.account where book_id = ? && TO_DAYS(NOW()) - TO_DAYS(date) < 4 group by date;
-  `;
-  const bind = [bookId, date];
+const getLastWeekTotal = async (bookId) => {
+  // const sql = `SELECT convert_tz(date,'+00:00','+08:00') as date, sum(amount) as total from cash_flows.account where book_id = ? && TO_DAYS(NOW()) - TO_DAYS(date) < 4 group by date;
+  // `;
+  const sql = `SELECT convert_tz(date,'+00:00','+08:00') as date, sum(amount) as total from cash_flows.account where book_id = ? and DATE(date) > (NOW() - INTERVAL 5 DAY) group by date`;
+  const bind = [bookId];
   const result = await sqlBind(sql, bind);
   return result;
 };
 
 const getMonthTagPie = async (bookId, startTime, endTime) => {
   const sql = `SELECT  tag.tag, sum(account.amount) as total FROM account INNER JOIN tag ON account.tag_id= tag.id WHERE book_id =? and date between ? and ? group by tag_id`;
-  const bind = [ bookId, startTime, endTime];
+  const bind = [bookId, startTime, endTime];
   const result = await sqlBind(sql, bind);
   return result;
 };
