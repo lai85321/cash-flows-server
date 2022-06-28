@@ -11,14 +11,15 @@ const getBalanceList = async (req, res) => {
     let splitIds = [];
     let dates = [];
     for (let i = 0; i < response.length; i++) {
-      dates.push(response[i].date.toString());
+      dates.push(response[i].date.toString().slice(0, 15));
       splitIds.push(parseInt(response[i].splitId));
       details.push(
         `${response[i].user} owes ${response[i].paidUser} $${response[i].balance}`
       );
     }
     const result = await _.groupBy(response, (r) => r.date);
-    const datesArr = Object.keys(result);
+    let datesKey = Object.keys(result);
+    datesArr = datesKey.map((item) => item.slice(0, 15));
     let data = [];
     for (let i = 0; i < dates.length; i++) {
       const idx = datesArr.findIndex((item) => item === dates[i]);
@@ -52,13 +53,10 @@ const getGroupBalanceList = async (req, res) => {
     const bookId = req.query.bookId;
     const userId = req.query.userId;
     const response = await Balance.getGroupBalanceList(bookId);
-    console.log(response);
     const userIds = response.map((item) => item.id);
     const users = response.map((item) => item.name);
     const amount = response.map((item) => item.balance);
-    console.log(amount);
     const split = balance(amount);
-    console.log(split);
     const details = [];
     split.forEach((item, idx) => {
       let oweName = users[item[0]];
@@ -67,7 +65,6 @@ const getGroupBalanceList = async (req, res) => {
     });
 
     const splitAmount = split.map((item, idx) => item[2]);
-    console.log(splitAmount);
 
     const accountData = splitAmount.map((item, idx) => {
       return [
