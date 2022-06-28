@@ -16,17 +16,21 @@ const createAccount = async (req, res) => {
     paidId,
     splits,
   } = req.body;
-  const data = {
-    book_id: parseInt(bookId),
-    user_id: parseInt(userId),
-    type_id: parseInt(typeId),
-    tag_id: parseInt(tagId),
-    amount: parseInt(amount),
-    date: date.slice(0, 10),
-    split: split,
-    note: note,
-  };
+  const data = [
+    [
+      parseInt(bookId),
+      parseInt(userId),
+      parseInt(tagId),
+      parseInt(typeId),
+      parseInt(amount),
+      date.slice(0, 10),
+      split,
+      note,
+      0,
+    ],
+  ];
   try {
+    console.log(data);
     const accountId = await Account.createAccount(data);
     if (split === 1) {
       const members = await Member.getMemberList(parseInt(bookId));
@@ -45,8 +49,8 @@ const createAccount = async (req, res) => {
       const splitData = splits.map((item, idx) => {
         return [
           accountId,
-          parseInt(paidId),
           memberIds[idx],
+          parseInt(paidId),
           splits[idx],
           balance[idx],
           0,
