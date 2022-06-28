@@ -7,7 +7,20 @@ const createSplit = async (splitData) => {
   );
   return result.insertId;
 };
-
+const updateSplitStatus = async (spiltId) => {
+  const sql = `UPDATE split SET status=1 WHERE id < ?;`;
+  const bind = [spiltId];
+  const result = await sqlBind(sql, bind);
+  return result.insertId;
+};
+const settleSplitStatus = async (spiltId) => {
+  const sql = `UPDATE split SET status=1 WHERE id = ?;`;
+  const bind = [spiltId];
+  const result = await sqlBind(sql, bind);
+  return result;
+};
 module.exports = {
   createSplit,
+  updateSplitStatus,
+  settleSplitStatus,
 };
