@@ -2,22 +2,22 @@ const sqlBind = require("../util/sqlBind");
 
 const createAccount = async (account) => {
   const result = await sqlBind(
-    `INSERT INTO account (book_id, user_id, tag_id, type_id, amount, date, split, note, is_ignored) VALUES ?`,
+    `INSERT INTO account (book_id, paid_user_id, tag_id, type_id, amount, date, split, note, is_ignored) VALUES ?`,
     [account]
   );
   return result.insertId;
 };
 
-const getOverview = async (userId, bookId, startTime, endTime) => {
-  const sql = `SELECT type_id, sum(amount) as total FROM account WHERE user_id = ? and book_id =? and is_ignored=0 and date between ? and ? group by type_id`;
-  const bind = [userId, bookId, startTime, endTime];
+const getOverview = async (bookId, startTime, endTime) => {
+  const sql = `SELECT type_id, sum(amount) as total FROM account WHERE book_id =? and is_ignored=0 and date between ? and ? group by type_id`;
+  const bind = [bookId, startTime, endTime];
   const result = await sqlBind(sql, bind);
   return result;
 };
 
-const getAccountList = async (userId, bookId, startTime, endTime) => {
-  const sql = `SELECT account.*, tag.tag FROM account INNER JOIN tag ON account.tag_id=tag.id WHERE account.user_id = ? and account.book_id =? and is_ignored=0 and date between ? and ? order by account.date DESC`;
-  const bind = [userId, bookId, startTime, endTime];
+const getAccountList = async (bookId, startTime, endTime) => {
+  const sql = `SELECT account.*, tag.tag FROM account INNER JOIN tag ON account.tag_id=tag.id WHERE  account.book_id =? and is_ignored=0 and date between ? and ? order by account.date DESC`;
+  const bind = [bookId, startTime, endTime];
   const result = await sqlBind(sql, bind);
   return result;
 };

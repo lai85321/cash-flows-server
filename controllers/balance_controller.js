@@ -122,11 +122,48 @@ const getGroupBalanceList = async (req, res) => {
   }
 };
 
-const updateBalance = async (req, res) => {
+const updateSplitStatus = async (req, res) => {
   try {
-    const { id } = req.body;
-    const result = await Split.settleSplitStatus(parseInt(id));
-    return res.status(200).send({ data: result });
+    const bookId = req.query.bookId;
+    const splitId = req.query.splitId;
+    await Split.settleSplitStatus(parseInt(splitId));
+    const response = await Balance.getBalanceList(bookId);
+    let details = [];
+    let splitIds = [];
+    let dates = [];
+    for (let i = 0; i < response.length; i++) {
+      dates.push(response[i].date.toString().slice(0, 15));
+      splitIds.push(parseInt(response[i].splitId));
+      details.push(
+        `${response[i].user} owes ${response[i].paidUser} $${response[i].balance}`
+      );
+    }
+    const result = await _.groupBy(response, (r) => r.date);
+    let datesKey = Object.keys(result);
+    datesArr = datesKey.map((item) => item.slice(0, 15));
+    let data = [];
+    for (let i = 0; i < dates.length; i++) {
+      const idx = datesArr.findIndex((item) => item === dates[i]);
+      if (!data[idx]) {
+        data[idx] = {
+          date: dates[i],
+
+          details: [
+            {
+              splitId: splitIds[i],
+              detail: details[i],
+            },
+          ],
+        };
+      } else {
+        data[idx].splitId;
+        data[idx].details.push({
+          splitId: splitIds[i],
+          detail: details[i],
+        });
+      }
+    }
+    return res.status(200).send({ data: data });
   } catch (err) {
     console.log(err);
   }
@@ -135,5 +172,5 @@ const updateBalance = async (req, res) => {
 module.exports = {
   getBalanceList,
   getGroupBalanceList,
-  updateBalance,
+  updateSplitStatus,
 };

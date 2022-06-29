@@ -14,7 +14,7 @@ const updateSplitStatus = async (spiltId) => {
   return result.insertId;
 };
 const settleSplitStatus = async (spiltId) => {
-  const sql = `UPDATE split SET status=1 WHERE id = ?;`;
+  const sql = `UPDATE split SET status=1 where account_id IN  (SELECT * FROM (SELECT account_id FROM cash_flows.split where id=?) as s);`;
   const bind = [spiltId];
   const result = await sqlBind(sql, bind);
   return result;

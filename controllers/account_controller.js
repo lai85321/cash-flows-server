@@ -30,7 +30,6 @@ const createAccount = async (req, res) => {
     ],
   ];
   try {
-    console.log(data);
     const accountId = await Account.createAccount(data);
     if (split === 1) {
       const members = await Member.getMemberList(parseInt(bookId));
@@ -67,29 +66,18 @@ const createAccount = async (req, res) => {
 
 const getAccountList = async (req, res) => {
   try {
-    const userId = req.query.userId;
     const bookId = req.query.bookId;
     let startTime = new Date(req.query.startTime);
     let endTime = new Date(req.query.startTime);
     endTime.setMonth(startTime.getMonth() + 1);
     startTime = startTime.toJSON().slice(0, 10);
     endTime = endTime.toJSON().slice(0, 10);
-    const overview = await Account.getOverview(
-      userId,
-      bookId,
-      startTime,
-      endTime
-    );
+    const overview = await Account.getOverview(bookId, startTime, endTime);
     const income = overview[0].total;
     let expense = overview[1].total;
     expense = -1 * expense;
     const balance = income + expense;
-    const response = await Account.getAccountList(
-      userId,
-      bookId,
-      startTime,
-      endTime
-    );
+    const response = await Account.getAccountList(bookId, startTime, endTime);
     const lists = await _.groupBy(response, (r) => r.date);
     const dates = Object.keys(lists);
     let totals = [];
