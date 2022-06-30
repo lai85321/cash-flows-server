@@ -1,4 +1,5 @@
 const sqlBind = require("../util/sqlBind");
+const pool = require("../database");
 const getBalanceList = async (bookId) => {
   const sql = `SELECT convert_tz(account.date,'+00:00','+08:00') as date,t.id as splitId, account.id as account_id, a.NAME as user, b.NAME as paidUser, t.balance \
   FROM split t\
@@ -8,15 +9,15 @@ const getBalanceList = async (bookId) => {
   WHERE  (t.user_id!=t.paid_user_id) and account.book_id=? and t.status=0\
   ORDER by date DESC`;
   const bind = [bookId];
-  const result = await sqlBind(sql, bind);
+  const [result] = await pool.query(sql, bind);
   return result;
 };
 const getGroupBalanceList = async (bookId) => {
-  const sql = `SELECT user.id, user.name, sum(split.balance) as balance FROM cash_flows.split INNER JOIN account ON split.account_id=account.id INNER JOIN user
+  const sql = `SELECT user.id, user.name, sum(split.balance+split.current_balance) as balance FROM cash_flows.split INNER JOIN account ON split.account_id=account.id INNER JOIN user
   ON split.user_id=user.id  where account.book_id= ? and split.status =0 group by split.user_id ;
   `;
   const bind = [bookId];
-  const result = await sqlBind(sql, bind);
+  const [result] = await pool.query(sql, bind);
   return result;
 };
 
