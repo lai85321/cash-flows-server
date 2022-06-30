@@ -88,6 +88,7 @@ const getGroupBalanceList = async (req, res) => {
         parseInt(item[2]),
         parseInt(item[2]),
         0,
+        0,
       ];
     });
     const splitData1 = split.map((item, idx) => {
@@ -97,6 +98,7 @@ const getGroupBalanceList = async (req, res) => {
         parseInt(userIds[item[1]]),
         0,
         parseInt(item[2]) * -1,
+        0,
         0,
       ];
     });

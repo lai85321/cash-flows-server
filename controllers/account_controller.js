@@ -53,6 +53,7 @@ const createAccount = async (req, res) => {
           splits[idx],
           balance[idx],
           0,
+          0,
         ];
       });
       await Split.createSplit(splitData);
@@ -73,8 +74,8 @@ const getAccountList = async (req, res) => {
     startTime = startTime.toJSON().slice(0, 10);
     endTime = endTime.toJSON().slice(0, 10);
     const overview = await Account.getOverview(bookId, startTime, endTime);
-    const income = overview[0].total;
-    let expense = overview[1].total;
+    const income = parseInt(overview[0].total);
+    let expense = parseInt(overview[1].total);
     expense = -1 * expense;
     const balance = income + expense;
     const response = await Account.getAccountList(bookId, startTime, endTime);
@@ -121,7 +122,78 @@ const getAccountList = async (req, res) => {
   }
 };
 
+const getMemberOverview = async (req, res) => {
+  try {
+    const bookId = parseInt(req.query.bookId);
+    let startTime = new Date(req.query.startTime);
+    let endTime = new Date(req.query.startTime);
+    endTime.setMonth(startTime.getMonth() + 1);
+    startTime = startTime.toJSON().slice(0, 10);
+    endTime = endTime.toJSON().slice(0, 10);
+    const incomeResult = await Account.getMonthIncome(
+      bookId,
+      startTime,
+      endTime
+    );
+
+    const incomeMap = await _.groupBy(incomeResult, (r) => r.id);
+    const unsplitResult = await Account.getMonthUnsplit(
+      bookId,
+      startTime,
+      endTime
+    );
+    const unsplits = await _.groupBy(unsplitResult, (r) => r.id);
+    const balancedResult = await Account.getMonthBalanced(
+      bookId,
+      startTime,
+      endTime
+    );
+    const balanceds = await _.groupBy(balancedResult, (r) => r.id);
+    const unbalancedResult = await Account.getMonthUnbalanced(
+      bookId,
+      startTime,
+      endTime
+    );
+    const unbalanceds = await _.groupBy(unbalancedResult, (r) => r.id);
+    const splitHalfResult = await Account.getMonthsplitHalf(
+      bookId,
+      startTime,
+      endTime
+    );
+
+    const splitHalfs = await _.groupBy(splitHalfResult, (r) => r.id);
+    const members = await Member.getMemberList(parseInt(bookId));
+    const memberIds = members.map((item) => item.id);
+    let incomes = [];
+    let expenses = [];
+    const results = memberIds.map((item) => {
+      let income = incomeMap[item] ? parseInt(incomeMap[item][0].income) : 0;
+      let unsplit = unsplits[item] ? parseInt(unsplits[item][0].expense) : 0;
+      let unbalanced = unbalanceds[item]
+        ? parseInt(unbalanceds[item][0].balance)
+        : 0;
+      let balanced = balanceds[item] ? parseInt(balanceds[item][0].expense) : 0;
+      let splitHalf = splitHalfs[item] ? parseInt(splitHalfs[item][0].sum) : 0;
+      incomes.push(income);
+      expenses.push(unsplit + balanced - unbalanced + splitHalf);
+    });
+
+    const data = members.map((item, idx) => {
+      return {
+        id: item.id,
+        name: item.name,
+        income: incomes[idx],
+        expense: expenses[idx],
+      };
+    });
+    return res.status(200).send({ data: data });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 module.exports = {
   createAccount,
   getAccountList,
+  getMemberOverview,
 };
