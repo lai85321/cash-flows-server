@@ -160,7 +160,6 @@ const getMemberOverview = async (req, res) => {
       startTime,
       endTime
     );
-
     const splitHalfs = await _.groupBy(splitHalfResult, (r) => r.id);
     const members = await Member.getMemberList(parseInt(bookId));
     const memberIds = members.map((item) => item.id);

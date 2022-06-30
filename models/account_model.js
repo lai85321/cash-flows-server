@@ -74,12 +74,42 @@ const getMonthsplitHalf = async (bookId, startTime, endTime) => {
     where account.book_id= ? and account.is_ignored =0 and account.date between ? and ? \
     and split.account_id >= (SELECT min(split.account_id) as account FROM cash_flows.split \
     INNER JOIN cash_flows.account ON split.account_id = account.id where account.book_id= ? \
-    and account.is_ignored =0 and split.status =0) group by split.user_id;
-  `;
+    and account.is_ignored =0 and split.status =0) group by split.user_id;`;
   const bind = [bookId, startTime, endTime, bookId];
   const [result] = await pool.query(sql, bind);
   return result;
 };
+
+const getWeekUnsplit = async (bookId) => {
+  const sql = `SELECT convert_tz(date,'+00:00','+08:00') as date, paid_user_id, sum(amount) as unsplit FROM account where book_id =? and is_ignored=0 and split =0 and type_id =2 and DATE(date) > (NOW() - INTERVAL 5 DAY) group by date, paid_user_id;`;
+  const bind = [bookId];
+  const [result] = await pool.query(sql, bind);
+  return result;
+};
+
+const getWeekBalanced = async (bookId) => {
+  const sql = `SELECT convert_tz(date,'+00:00','+08:00') as date, split.user_id, sum(split.split) as balanced FROM cash_flows.account\
+  INNER JOIN cash_flows.split ON account.id = split.account_id\
+  where account.book_id = ? and account.is_ignored=0 and account.split =1 \
+  and split.status = 1 and account.type_id =2 and DATE(account.date) > (NOW() - INTERVAL 5 DAY)\
+  group by split.user_id, account.date;
+  `;
+  const bind = [bookId];
+  const [result] = await pool.query(sql, bind);
+  return result;
+};
+
+const getWeekUnbalanced = async (bookId) => {
+  const sql = `SELECT date, split.user_id, sum(split.split-split.balance-split.current_balance) as unbalanced\
+   FROM cash_flows.account INNER JOIN cash_flows.split ON account.id = split.account_id\
+   where account.book_id = ? and account.is_ignored=0 and account.split =1\ 
+   and split.status = 0 and account.type_id =2 and DATE(account.date) > (NOW() - INTERVAL 5 DAY)\
+    group by split.user_id, account.date;`;
+  const bind = [bookId];
+  const [result] = await pool.query(sql, bind);
+  return result;
+};
+
 module.exports = {
   createAccount,
   getOverview,
@@ -91,4 +121,7 @@ module.exports = {
   getMonthBalanced,
   getMonthUnbalanced,
   getMonthsplitHalf,
+  getWeekUnsplit,
+  getWeekBalanced,
+  getWeekUnbalanced,
 };
