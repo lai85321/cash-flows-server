@@ -6,7 +6,7 @@ const getBalanceList = async (bookId) => {
   JOIN user a ON t.user_id =a.id\
   JOIN user b ON t.paid_user_id = b.id\
   INNER JOIN account ON t.account_id = account.id\
-  WHERE  (t.user_id!=t.paid_user_id) and account.book_id=? and t.status=0\
+  WHERE  (t.user_id!=t.paid_user_id) and account.book_id=? and t.is_calculated=0\
   ORDER by date DESC`;
   const bind = [bookId];
   const [result] = await pool.query(sql, bind);
@@ -14,7 +14,7 @@ const getBalanceList = async (bookId) => {
 };
 const getGroupBalanceList = async (bookId) => {
   const sql = `SELECT user.id, user.name, sum(split.balance+split.current_balance) as balance FROM cash_flows.split INNER JOIN account ON split.account_id=account.id INNER JOIN user
-  ON split.user_id=user.id  where account.book_id= ? and split.status =0 group by split.user_id ;
+  ON split.user_id=user.id  where account.book_id= ? and split.is_calculated =0 group by split.user_id ;
   `;
   const bind = [bookId];
   const [result] = await pool.query(sql, bind);

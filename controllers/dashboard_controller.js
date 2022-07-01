@@ -115,7 +115,7 @@ const getSingleMemberDailyChart = async (req, res) => {
             let unbalanced = unbalancedItem[0].unbalanced
               ? parseInt(unbalancedItem[0].unbalanced)
               : 0;
-            sum = sum - unbalanced;
+            sum = sum + unbalanced;
           }
         }
 

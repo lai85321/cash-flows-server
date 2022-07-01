@@ -54,6 +54,8 @@ const createAccount = async (req, res) => {
           balance[idx],
           0,
           0,
+          0,
+          1,
         ];
       });
       await Split.createSplit(splitData);
@@ -74,12 +76,23 @@ const getAccountList = async (req, res) => {
     startTime = startTime.toJSON().slice(0, 10);
     endTime = endTime.toJSON().slice(0, 10);
     const overview = await Account.getOverview(bookId, startTime, endTime);
-    const income = parseInt(overview[0].total);
-    let expense = parseInt(overview[1].total);
-    expense = -1 * expense;
+    const incomeExist = overview.find((item) => item.type_id == 1);
+    const expenseExist = overview.find((item) => item.type_id == 2);
+    let income = 0;
+    let expense = 0;
+    if (typeof incomeExist != "undefined") {
+      income = parseInt(incomeExist.total);
+    }
+
+    if (typeof expenseExist != "undefined") {
+      expense = -1 * parseInt(expenseExist.total);
+    }
     const balance = income + expense;
     const response = await Account.getAccountList(bookId, startTime, endTime);
-    const lists = await _.groupBy(response, (r) => r.date);
+    const status = await Split.checkSplitStatus(bookId, startTime, endTime);
+    const lists = await _.groupBy(response, (r) =>
+      r.date.toString().slice(0, 15)
+    );
     const dates = Object.keys(lists);
     let totals = [];
     dates.forEach((date) => {
@@ -96,7 +109,15 @@ const getAccountList = async (req, res) => {
     const accounts = [];
     for (let i = 0; i < dates.length; i++) {
       const details = lists[dates[i]].map((item) => {
+        let splitStatus = 2;
+        let find = status.find((s) => s.id == item.id);
+        if (typeof find != "undefined") {
+          splitStatus = find.status;
+        }
         return {
+          id: item.id,
+          name: item.name,
+          status: splitStatus,
           amount: item.type_id === 1 ? item.amount : -1 * item.amount,
           tag: item.tag,
           note: item.note,
@@ -126,6 +147,7 @@ const getMemberOverview = async (req, res) => {
   try {
     const bookId = parseInt(req.query.bookId);
     let startTime = new Date(req.query.startTime);
+
     let endTime = new Date(req.query.startTime);
     endTime.setMonth(startTime.getMonth() + 1);
     startTime = startTime.toJSON().slice(0, 10);
@@ -160,6 +182,7 @@ const getMemberOverview = async (req, res) => {
       startTime,
       endTime
     );
+
     const splitHalfs = await _.groupBy(splitHalfResult, (r) => r.id);
     const members = await Member.getMemberList(parseInt(bookId));
     const memberIds = members.map((item) => item.id);
