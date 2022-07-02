@@ -34,7 +34,6 @@ const createAccount = async (req, res) => {
     if (split === 1) {
       const members = await Member.getMemberList(parseInt(bookId));
       const memberIds = members.map((item) => item.id);
-
       let balance = [];
       balance = [...splits];
       const sum = splits.reduce(
@@ -44,7 +43,6 @@ const createAccount = async (req, res) => {
       );
       const idx = memberIds.findIndex((item) => item === parseInt(paidId));
       balance[idx] = (sum - splits[idx]) * -1;
-
       const splitData = splits.map((item, idx) => {
         return [
           accountId,
@@ -60,7 +58,6 @@ const createAccount = async (req, res) => {
       });
       await Split.createSplit(splitData);
     }
-
     return res.status(200).send({ message: `add new account` });
   } catch (err) {
     console.log(err);
@@ -83,7 +80,6 @@ const getAccountList = async (req, res) => {
     if (typeof incomeExist != "undefined") {
       income = parseInt(incomeExist.total);
     }
-
     if (typeof expenseExist != "undefined") {
       expense = -1 * parseInt(expenseExist.total);
     }
@@ -105,7 +101,6 @@ const getAccountList = async (req, res) => {
       );
       totals.push(total);
     });
-
     const accounts = [];
     for (let i = 0; i < dates.length; i++) {
       const details = lists[dates[i]].map((item) => {
@@ -123,7 +118,6 @@ const getAccountList = async (req, res) => {
           note: item.note,
         };
       });
-
       let data = {
         date: dates[i].slice(4, 10),
         total: totals[i],
@@ -157,7 +151,6 @@ const getMemberOverview = async (req, res) => {
       startTime,
       endTime
     );
-
     const incomeMap = await _.groupBy(incomeResult, (r) => r.id);
     const unsplitResult = await Account.getMonthUnsplit(
       bookId,
@@ -182,7 +175,6 @@ const getMemberOverview = async (req, res) => {
       startTime,
       endTime
     );
-
     const splitHalfs = await _.groupBy(splitHalfResult, (r) => r.id);
     const members = await Member.getMemberList(parseInt(bookId));
     const memberIds = members.map((item) => item.id);
@@ -199,7 +191,6 @@ const getMemberOverview = async (req, res) => {
       incomes.push(income);
       expenses.push(unsplit + balanced - unbalanced + splitHalf);
     });
-
     const data = members.map((item, idx) => {
       return {
         id: item.id,

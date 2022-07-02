@@ -1,5 +1,6 @@
 const sqlBind = require("../util/sqlBind");
 const pool = require("../database");
+
 const getBalanceList = async (bookId) => {
   const sql = `SELECT convert_tz(account.date,'+00:00','+08:00') as date,t.id as splitId, account.id as account_id, a.NAME as user, b.NAME as paidUser, t.balance \
   FROM split t\

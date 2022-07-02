@@ -81,7 +81,6 @@ const getGroupBalanceList = async (req, res) => {
     });
     const accountId = await Account.createAccount(accountData);
     const historyId = await Split.getBalanceRange(bookId);
-    console.log(historyId);
     let splitData = split.map((item, idx) => {
       return [
         accountId + idx,
@@ -113,7 +112,6 @@ const getGroupBalanceList = async (req, res) => {
       ];
     });
     splitData = [...splitData, ...splitData1];
-    console.log(splitData);
     await Split.updateSplitStatus(bookId);
     const splitId = await Split.createBalancedSplit(splitData);
     const resultId = await Split.updateSplitIsCalculated(splitId);
@@ -161,7 +159,6 @@ const updateSplitStatus = async (req, res) => {
       if (!data[idx]) {
         data[idx] = {
           date: dates[i],
-
           details: [
             {
               splitId: splitIds[i],
