@@ -50,7 +50,6 @@ const settleSplitStatus = async (bookId, splitId) => {
       "SELECT account_id, user_id, paid_user_id, balance  FROM cash_flows.split WHERE split.id = ?",
       [splitId]
     );
-    console.log(result);
     await conn.query(
       "UPDATE split SET status =1,  is_calculated =1, split.current_balance = split.current_balance-? WHERE id =?",
       [result[0].balance, splitId]

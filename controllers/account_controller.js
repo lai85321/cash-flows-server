@@ -1,6 +1,8 @@
 const Account = require("../models/account_model");
 const Member = require("../models/member_model");
+const Balance = require("../models/balance_model");
 const Split = require("../models/split_model");
+const balance = require("../util/getBalance");
 const _ = require("lodash");
 
 const createAccount = async (req, res) => {
@@ -137,6 +139,41 @@ const getAccountList = async (req, res) => {
   }
 };
 
+const getAccountDetail = async (req, res) => {
+  try {
+    const accountId = req.query.id;
+    const result = await Account.getAccountDetail(accountId);
+    console.log(result);
+    let data = {};
+    if (result[0].split === null) {
+      const { amount, paid_name, note, tag, date } = result[0];
+      data = {
+        amount: amount,
+        paidName: paid_name,
+        note: note,
+        tag: tag,
+        date: date,
+      };
+    } else {
+      const splits = result.map((item) => {
+        return { splitName: item.split_name, split: item.split };
+      });
+      const { amount, paid_name, note, tag, date } = result[0];
+      data = {
+        amount: amount,
+        paidName: paid_name,
+        note: note,
+        tag: tag,
+        date: date,
+        splits: splits,
+      };
+    }
+    return res.status(200).send({ data: data });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 const getMemberOverview = async (req, res) => {
   try {
     const bookId = parseInt(req.query.bookId);
@@ -205,8 +242,105 @@ const getMemberOverview = async (req, res) => {
   }
 };
 
+const deleteAccount = async (req, res) => {
+  try {
+    const removeId = parseInt(req.query.id);
+    const result = await Account.getAccountDetail(removeId);
+    if (result[0].is_calculated == 1) {
+      let recalUserIds = [];
+      let recalBalance = [];
+      for (let i = 0; i < result.length; i++) {
+        if (result[i].status === 0) {
+          recalUserIds.push(result[i].user_id);
+          recalBalance.push(result[i].balance);
+        }
+      }
+      const bookId = parseInt(req.query.bookId);
+      const userId = parseInt(req.query.userId);
+      const response = await Balance.getGroupBalanceList(bookId);
+      const userIds = response.map((item) => item.id);
+      const users = response.map((item) => item.name);
+      const amount = response.map((item) => parseInt(item.balance));
+      let newAmount = [];
+      for (let i = 0; i < amount.length; i++) {
+        let id = recalUserIds.findIndex((item) => item === userIds[i]);
+        console.log(id);
+        console.log(amount[i]);
+        console.log(recalBalance[id]);
+        amount[i] = amount[i] + recalBalance[id];
+        console.log(amount[i]);
+      }
+      const split = balance(amount);
+      const details = [];
+      split.forEach((item, idx) => {
+        let oweName = users[item[0]];
+        let lendName = users[item[1]];
+        details.push(`${oweName} owes ${lendName} $${item[2]}`);
+      });
+      const date = new Date();
+      const splitAmount = split.map((item, idx) => item[2]);
+      const accountData = splitAmount.map((item, idx) => {
+        return [
+          bookId,
+          parseInt(userId),
+          4,
+          3,
+          item,
+          date,
+          1,
+          "group balance",
+          1,
+        ];
+      });
+      const accountId = await Account.createAccount(accountData);
+      const historyId = await Split.getBalanceRange(bookId);
+      let splitData = split.map((item, idx) => {
+        return [
+          accountId + idx,
+          parseInt(userIds[item[0]]),
+          parseInt(userIds[item[1]]),
+          parseInt(item[2]),
+          parseInt(item[2]),
+          0,
+          historyId[0].min,
+          historyId[0].max,
+          0,
+          0,
+          0,
+        ];
+      });
+      const splitData1 = split.map((item, idx) => {
+        return [
+          accountId + idx,
+          parseInt(userIds[item[1]]),
+          parseInt(userIds[item[1]]),
+          0,
+          parseInt(item[2]) * -1,
+          0,
+          historyId[0].min,
+          historyId[0].max,
+          0,
+          0,
+          0,
+        ];
+      });
+      splitData = [...splitData, ...splitData1];
+      await Split.updateSplitStatus(bookId);
+      const splitId = await Split.createBalancedSplit(splitData);
+      const resultId = await Split.updateSplitIsCalculated(splitId);
+      await Account.deleteAccount(removeId);
+    } else {
+      await Account.deleteAccount(removeId);
+    }
+    return res.status(200).send({ data: "Delete account" });
+  } catch (err) {
+    console.log(err);
+  }
+};
 module.exports = {
   createAccount,
   getAccountList,
+  getAccountDetail,
   getMemberOverview,
+  deleteAccount,
 };

@@ -27,6 +27,18 @@ const getAccountList = async (bookId, startTime, endTime) => {
   return result;
 };
 
+const getAccountDetail = async (accountId) => {
+  const sql = `SELECT account.amount, a.name as paid_name, account.note, tag.tag, account.date, s.user_id, b.name as split_name, s.split, s.balance+s.current_balance as balance, s.status, s.is_calculated  FROM cash_flows.account\
+  LEFT JOIN cash_flows.split s ON account.id = s.account_id\ 
+  LEFT JOIN cash_flows.user a ON account.paid_user_id = a.id\ 
+  LEFT JOIN cash_flows.user b ON s.user_id = b.id\
+  LEFT JOIN cash_flows.tag ON account.tag_id = tag.id\
+  WHERE account.id =?`;
+  const bind = [accountId];
+  const [result] = await pool.query(sql, bind);
+  return result;
+};
+
 const getLastWeekTotal = async (bookId) => {
   const sql = `SELECT convert_tz(date,'+00:00','+08:00') as date, sum(amount) as total from cash_flows.account where book_id = ? and is_ignored=0 and DATE(date) > (NOW() - INTERVAL 5 DAY) group by date`;
   const bind = [bookId];
@@ -116,10 +128,33 @@ const getWeekUnbalanced = async (bookId) => {
   return result;
 };
 
+const deleteAccount = async (accountId) => {
+  const conn = await pool.getConnection();
+  try {
+    await conn.query("START TRANSACTION");
+    const [result] = await conn.query(
+      "DELETE FROM cash_flows.account WHERE id =?",
+      [accountId]
+    );
+    await conn.query("DELETE FROM cash_flows.account WHERE account.id =?", [
+      accountId,
+    ]);
+    await conn.query("COMMIT");
+    return result;
+  } catch (error) {
+    await conn.query("ROLLBACK");
+    console.log(error);
+    return -1;
+  } finally {
+    await conn.release();
+  }
+};
+
 module.exports = {
   createAccount,
   getOverview,
   getAccountList,
+  getAccountDetail,
   getLastWeekTotal,
   getMonthTagPie,
   getMonthIncome,
@@ -130,4 +165,5 @@ module.exports = {
   getWeekUnsplit,
   getWeekBalanced,
   getWeekUnbalanced,
+  deleteAccount,
 };
