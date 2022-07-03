@@ -150,6 +150,16 @@ const deleteAccount = async (accountId) => {
   }
 };
 
+const getMemberOverview = async (bookId, startTime, endTime) => {
+  const sql = `SELECT user.name, account.paid_user_id as user_id, sum(account.amount) as amount FROM cash_flows.account\
+  INNER JOIN cash_flows.user ON account.paid_user_id = user.id\
+  WHERE account.book_id = ? and date between ? and ? and is_ignored = 0\
+  group by paid_user_id order by paid_user_id;`;
+  const bind = [bookId, startTime, endTime];
+  const [result] = await pool.query(sql, bind);
+  return result;
+};
+
 module.exports = {
   createAccount,
   getOverview,
@@ -166,4 +176,5 @@ module.exports = {
   getWeekBalanced,
   getWeekUnbalanced,
   deleteAccount,
+  getMemberOverview,
 };
