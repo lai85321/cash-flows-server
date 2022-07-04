@@ -17,9 +17,10 @@ const getBalanceList = async (req, res) => {
         `${response[i].user} owes ${response[i].paidUser} $${response[i].balance}`
       );
     }
-    const result = await _.groupBy(response, (r) =>
-      r.date.toString().slice(0, 15)
-    );
+    const result = await _.groupBy(response, (r) => {
+      r.date.setHours(r.date.getHours() + 8);
+      return r.date.toString().slice(0, 15);
+    });
     let datesKey = Object.keys(result);
     datesArr = datesKey.map((item) => item.slice(0, 15));
     let data = [];
@@ -50,7 +51,8 @@ const getBalanceList = async (req, res) => {
 };
 const getGroupBalanceList = async (req, res) => {
   try {
-    const date = new Date();
+    const now = new Date();
+    const utcDate = new Date(now.toUTCString().slice(0, -4));
     const bookId = parseInt(req.query.bookId);
     const userId = req.query.userId;
     const response = await Balance.getGroupBalanceList(bookId);
@@ -73,7 +75,7 @@ const getGroupBalanceList = async (req, res) => {
         4,
         3,
         item,
-        date,
+        utcDate,
         1,
         "group balance",
         1,
@@ -138,7 +140,9 @@ const updateSplitStatus = async (req, res) => {
   try {
     const bookId = req.query.bookId;
     const splitId = req.query.splitId;
-    await Split.settleSplitStatus(parseInt(bookId), parseInt(splitId));
+    const now = new Date();
+    const utcDate = new Date(now.toUTCString().slice(0, -4));
+    await Split.settleSplitStatus(parseInt(bookId), parseInt(splitId), utcDate);
     const response = await Balance.getBalanceList(bookId);
     let details = [];
     let splitIds = [];

@@ -9,7 +9,6 @@ const getSingleDailyChart = async (req, res) => {
     d.setDate(d.getDate() - i);
     return d.toJSON().slice(5, 10);
   });
-  const today = new Date();
   const dates = datesDesc.reverse();
 
   try {
@@ -44,9 +43,9 @@ const getSingleTagPieChart = async (req, res) => {
     let startTime = new Date(req.query.startTime);
     let endTime = new Date(req.query.startTime);
     endTime.setMonth(startTime.getMonth() + 1);
-    startTime = startTime.toJSON().slice(0, 10);
-    endTime = endTime.toJSON().slice(0, 10);
-    const tagData = await Account.getMonthTagPie(bookId, startTime, endTime);
+    const utcStart = new Date(startTime.toUTCString().slice(0, -4));
+    const utcEnd = new Date(endTime.toUTCString().slice(0, -4));
+    const tagData = await Account.getMonthTagPie(bookId, utcStart, utcEnd);
     return res.status(200).send({ data: tagData });
   } catch (err) {
     console.log(err);
@@ -60,7 +59,6 @@ const getSingleMemberDailyChart = async (req, res) => {
     d.setDate(d.getDate() - i);
     return d.toJSON().slice(5, 10);
   });
-  const today = new Date();
   const dates = datesDesc.reverse();
 
   try {
@@ -136,8 +134,39 @@ const getSingleMemberDailyChart = async (req, res) => {
   }
 };
 
+const getMonthBalanceChart = async (req, res) => {
+  try {
+    const bookId = req.query.bookId;
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const nextMonth = now.getMonth() + 2;
+    const next = new Date(`${year}-${nextMonth}`);
+    const lastDate = new Date(next.toUTCString().slice(0, -4));
+    console.log(lastDate);
+    const result = await Account.getMonthOverview(bookId, lastDate);
+    const dates = result.map((item) => item.date.toString().slice(8, 10));
+    const day = new Date(year, month, 0).getDate();
+    const days = [...Array(day)].map((_, i) => {
+      return i + 1;
+    });
+    const expenses = [...Array(day)].map((_, i) => {
+      return 0;
+    });
+    for (let i = 0; i < dates.length; i++) {
+      let idx = parseInt(dates[i]);
+      expenses[idx - 1] = parseInt(result[i].amount);
+    }
+
+    return res.status(200).send({ data: { days: days, expenses: expenses } });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 module.exports = {
   getSingleDailyChart,
   getSingleTagPieChart,
   getSingleMemberDailyChart,
+  getMonthBalanceChart,
 };

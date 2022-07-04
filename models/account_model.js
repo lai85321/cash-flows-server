@@ -17,13 +17,17 @@ const getOverview = async (bookId, startTime, endTime) => {
 };
 
 const getAccountList = async (bookId, startTime, endTime) => {
-  const sql = `SELECT account.*, tag.tag,user.name FROM cash_flows.account\
-  INNER JOIN cash_flows.tag ON account.tag_id=tag.id\ 
-  INNER JOIN cash_flows.user ON account.paid_user_id=user.id\ 
-  WHERE account.book_id = ? and is_ignored=0 and date between ? and ?\
+  const sql = `SELECT account.id, account.book_id, account.paid_user_id, account.tag_id, account.type_id, account.amount, convert_tz(account.date,'+00:00','+08:00') as date, account.split, account.note, account.is_ignored, tag.tag,user.name FROM cash_flows.account
+  INNER JOIN cash_flows.tag ON account.tag_id=tag.id
+  INNER JOIN cash_flows.user ON account.paid_user_id=user.id
+  WHERE account.book_id = ? and is_ignored=0 and date between ? and ?
   order by account.date DESC`;
   const bind = [bookId, startTime, endTime];
   const [result] = await pool.query(sql, bind);
+  console.log(result);
+  console.log(result.length);
+
+  console.log(31);
   return result;
 };
 
@@ -47,7 +51,7 @@ const getLastWeekTotal = async (bookId) => {
 };
 
 const getMonthTagPie = async (bookId, startTime, endTime) => {
-  const sql = `SELECT  tag.tag, sum(account.amount) as total FROM account INNER JOIN tag ON account.tag_id= tag.id WHERE book_id =? and is_ignored=0 and date between ? and ? group by tag_id`;
+  const sql = `SELECT  tag.tag, sum(account.amount) as total FROM account INNER JOIN tag ON account.tag_id= tag.id WHERE book_id =? and tag_id != 4 and is_ignored=0 and date between ? and ? group by tag_id`;
   const bind = [bookId, startTime, endTime];
   const [result] = await pool.query(sql, bind);
   return result;
@@ -160,6 +164,16 @@ const getMemberOverview = async (bookId, startTime, endTime) => {
   return result;
 };
 
+const getMonthOverview = async (bookId, lastDate) => {
+  const sql = `SELECT DATE(convert_tz(account.date,'+00:00','+08:00')) as date, sum(account.amount) as amount FROM cash_flows.account
+  INNER JOIN cash_flows.user ON account.paid_user_id = user.id
+  WHERE account.book_id = ? and (account.date) > DATE(? - INTERVAL 1 month) and is_ignored = 0 and tag_id!=4 and type_id =2
+  group by DATE(convert_tz(account.date,'+00:00','+08:00')) order by DATE(convert_tz(account.date,'+00:00','+08:00'))`;
+  const bind = [bookId, lastDate];
+  const [result] = await pool.query(sql, bind);
+  return result;
+};
+
 module.exports = {
   createAccount,
   getOverview,
@@ -177,4 +191,5 @@ module.exports = {
   getWeekUnbalanced,
   deleteAccount,
   getMemberOverview,
+  getMonthOverview,
 };

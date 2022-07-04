@@ -41,7 +41,7 @@ const updateSplitIsCalculated = async (splitId) => {
   return result.insertId;
 };
 
-const settleSplitStatus = async (bookId, splitId) => {
+const settleSplitStatus = async (bookId, splitId, utcDate) => {
   //const sql = `UPDATE split SET status=1 where account_id IN  (SELECT * FROM (SELECT account_id FROM cash_flows.split where id=?) as s);`;
   const conn = await pool.getConnection();
   try {
@@ -67,7 +67,7 @@ const settleSplitStatus = async (bookId, splitId) => {
           4,
           3,
           result[0].balance,
-          new Date(),
+          utcDate,
           0,
           "settle",
           0,
@@ -78,7 +78,7 @@ const settleSplitStatus = async (bookId, splitId) => {
           4,
           3,
           -1 * result[0].balance,
-          new Date(),
+          utcDate,
           0,
           "settle",
           0,

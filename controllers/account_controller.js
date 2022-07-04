@@ -25,7 +25,7 @@ const createAccount = async (req, res) => {
       parseInt(tagId),
       parseInt(typeId),
       parseInt(amount),
-      date.slice(0, 10),
+      date,
       split,
       note,
       0,
@@ -72,9 +72,9 @@ const getAccountList = async (req, res) => {
     let startTime = new Date(req.query.startTime);
     let endTime = new Date(req.query.startTime);
     endTime.setMonth(startTime.getMonth() + 1);
-    startTime = startTime.toJSON().slice(0, 10);
-    endTime = endTime.toJSON().slice(0, 10);
-    const overview = await Account.getOverview(bookId, startTime, endTime);
+    const utcStart = new Date(startTime.toUTCString().slice(0, -4));
+    const utcEnd = new Date(endTime.toUTCString().slice(0, -4));
+    const overview = await Account.getOverview(bookId, utcStart, utcEnd);
     const incomeExist = overview.find((item) => item.type_id == 1);
     const expenseExist = overview.find((item) => item.type_id == 2);
     let income = 0;
@@ -86,12 +86,15 @@ const getAccountList = async (req, res) => {
       expense = -1 * parseInt(expenseExist.total);
     }
     const balance = income + expense;
-    const response = await Account.getAccountList(bookId, startTime, endTime);
-    const status = await Split.checkSplitStatus(bookId, startTime, endTime);
-    const lists = await _.groupBy(response, (r) =>
-      r.date.toString().slice(0, 15)
-    );
+    const response = await Account.getAccountList(bookId, utcStart, utcEnd);
+    console.log(response);
+    const status = await Split.checkSplitStatus(bookId, utcStart, utcEnd);
+    const lists = await _.groupBy(response, (r) => {
+      return r.date.toString().slice(0, 15);
+    });
     const dates = Object.keys(lists);
+
+    console.log(lists);
     let totals = [];
     dates.forEach((date) => {
       totalArr = lists[date].map((item) =>
@@ -127,12 +130,14 @@ const getAccountList = async (req, res) => {
       };
       accounts.push(data);
     }
+    // console.log(accounts);
     const dataObj = {
       income: income,
       expense: expense,
       balance: balance,
       daily: accounts,
     };
+
     return res.status(200).send({ data: dataObj });
   } catch (err) {
     console.log(err);
@@ -151,7 +156,7 @@ const getAccountDetail = async (req, res) => {
         paidName: paid_name,
         note: note,
         tag: tag,
-        date: date,
+        date: date.setHours(date.getHours() + 8),
       };
     } else {
       const splits = result.map((item) => {
@@ -163,7 +168,7 @@ const getAccountDetail = async (req, res) => {
         paidName: paid_name,
         note: note,
         tag: tag,
-        date: date,
+        date: date.setHours(date.getHours() + 8),
         splits: splits,
       };
     }
@@ -179,15 +184,14 @@ const getMemberOverview = async (req, res) => {
     let startTime = new Date(req.query.startTime);
     let endTime = new Date(req.query.startTime);
     endTime.setMonth(startTime.getMonth() + 1);
-    startTime = startTime.toJSON().slice(0, 10);
-    endTime = endTime.toJSON().slice(0, 10);
-
+    const utcStart = new Date(startTime.toUTCString().slice(0, -4));
+    const utcEnd = new Date(endTime.toUTCString().slice(0, -4));
     const members = await Member.getMemberList(parseInt(bookId));
     const memberIds = members.map((item) => item.id);
     const overviews = await Account.getMemberOverview(
       parseInt(bookId),
-      startTime,
-      endTime
+      utcStart,
+      utcEnd
     );
 
     const data = members.map((item, idx) => {
@@ -251,9 +255,6 @@ const deleteAccount = async (req, res) => {
       let newAmount = [];
       for (let i = 0; i < amount.length; i++) {
         let id = recalUserIds.findIndex((item) => item === userIds[i]);
-        console.log(id);
-        console.log(amount[i]);
-        console.log(recalBalance[id]);
         amount[i] = amount[i] + recalBalance[id];
         console.log(amount[i]);
       }
@@ -264,7 +265,8 @@ const deleteAccount = async (req, res) => {
         let lendName = users[item[1]];
         details.push(`${oweName} owes ${lendName} $${item[2]}`);
       });
-      const date = new Date();
+      const now = new Date();
+      const utcDate = new Date(now.toUTCString().slice(0, -4));
       const splitAmount = split.map((item, idx) => item[2]);
       const accountData = splitAmount.map((item, idx) => {
         return [
@@ -273,7 +275,7 @@ const deleteAccount = async (req, res) => {
           4,
           3,
           item,
-          date,
+          utcDate,
           1,
           "group balance",
           1,
@@ -324,6 +326,7 @@ const deleteAccount = async (req, res) => {
     console.log(err);
   }
 };
+
 module.exports = {
   createAccount,
   getAccountList,
