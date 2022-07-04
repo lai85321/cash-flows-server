@@ -87,14 +87,11 @@ const getAccountList = async (req, res) => {
     }
     const balance = income + expense;
     const response = await Account.getAccountList(bookId, utcStart, utcEnd);
-    console.log(response);
     const status = await Split.checkSplitStatus(bookId, utcStart, utcEnd);
     const lists = await _.groupBy(response, (r) => {
       return r.date.toString().slice(0, 15);
     });
     const dates = Object.keys(lists);
-
-    console.log(lists);
     let totals = [];
     dates.forEach((date) => {
       totalArr = lists[date].map((item) =>

@@ -143,7 +143,6 @@ const getMonthBalanceChart = async (req, res) => {
     const nextMonth = now.getMonth() + 2;
     const next = new Date(`${year}-${nextMonth}`);
     const lastDate = new Date(next.toUTCString().slice(0, -4));
-    console.log(lastDate);
     const result = await Account.getMonthOverview(bookId, lastDate);
     const dates = result.map((item) => item.date.toString().slice(8, 10));
     const day = new Date(year, month, 0).getDate();

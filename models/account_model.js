@@ -24,10 +24,6 @@ const getAccountList = async (bookId, startTime, endTime) => {
   order by account.date DESC`;
   const bind = [bookId, startTime, endTime];
   const [result] = await pool.query(sql, bind);
-  console.log(result);
-  console.log(result.length);
-
-  console.log(31);
   return result;
 };
 
