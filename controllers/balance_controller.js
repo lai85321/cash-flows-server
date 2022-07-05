@@ -126,7 +126,7 @@ const getGroupBalanceList = async (req, res) => {
     });
     const data = [
       {
-        date: date.toString(),
+        date: utcDate.toString(),
         details: responseData,
       },
     ];
