@@ -1,4 +1,3 @@
-const sqlBind = require("../util/sqlBind");
 const pool = require("../database");
 
 const getBalanceList = async (bookId) => {

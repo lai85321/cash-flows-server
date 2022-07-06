@@ -1,4 +1,3 @@
-const sqlBind = require("../util/sqlBind");
 const pool = require("../database");
 
 const signUp = async (provider, name, email, pwdHash) => {
@@ -12,6 +11,7 @@ const signUp = async (provider, name, email, pwdHash) => {
     const sql = "INSERT INTO user SET ?";
     const result = await pool.query(sql, [user]);
     user.id = result.insertId;
+    return user;
   } catch (error) {
     return {
       error: "Email Already Exists",

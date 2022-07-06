@@ -199,6 +199,7 @@ const getMemberOverview = async (req, res) => {
       return {
         id: item.id,
         name: item.name,
+        picture: item.picture,
         payment: -1 * payment,
       };
     });
