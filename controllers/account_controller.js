@@ -127,7 +127,6 @@ const getAccountList = async (req, res) => {
       };
       accounts.push(data);
     }
-    // console.log(accounts);
     const dataObj = {
       income: income,
       expense: expense,
@@ -253,7 +252,6 @@ const deleteAccount = async (req, res) => {
       for (let i = 0; i < amount.length; i++) {
         let id = recalUserIds.findIndex((item) => item === userIds[i]);
         amount[i] = amount[i] + recalBalance[id];
-        console.log(amount[i]);
       }
       const split = balance(amount);
       const details = [];

@@ -4,6 +4,7 @@ const _ = require("lodash");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
+const { s3Upload } = require("../util/s3Service");
 const { SALTROUNDS, JWT_SECRET, JWT_EXPIRES_IN } = process.env;
 
 const userSignup = async (req, res) => {
@@ -109,7 +110,27 @@ const userSignin = async (req, res) => {
   };
   return res.status(200).send({ data: response });
 };
+
+const userUpdate = async (req, res) => {
+  try {
+    const userId = req.query.id;
+    if (req.file) {
+      const uploadS3 = await s3Upload(userId, req.file);
+      const uploadFile = req.file;
+      const updateData = { picture: uploadFile.originalname };
+      const result = await User.userUpdate(updateData, userId);
+      return res.status(200).send({ data: result[0] });
+    } else {
+      const updateData = req.body;
+      const result = await User.userUpdate(updateData, userId);
+      return res.status(200).send({ data: result[0] });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
 module.exports = {
   userSignup,
   userSignin,
+  userUpdate,
 };

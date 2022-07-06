@@ -26,7 +26,28 @@ const nativeSignIn = async (email) => {
   );
   return result;
 };
+
+const userUpdate = async (updateData, userId) => {
+  const conn = await pool.getConnection();
+  try {
+    await conn.query("START TRANSACTION");
+    await conn.query("UPDATE user SET ? WHERE id=?", [updateData, userId]);
+    const [result] = await conn.query("SELECT * FROM user WHERE id=?", [
+      userId,
+    ]);
+    await conn.query("COMMIT");
+    return result;
+  } catch (error) {
+    await conn.query("ROLLBACK");
+    console.log(error);
+    return -1;
+  } finally {
+    await conn.release();
+  }
+};
+
 module.exports = {
   signUp,
   nativeSignIn,
+  userUpdate,
 };

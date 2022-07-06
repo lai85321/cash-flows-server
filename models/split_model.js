@@ -58,7 +58,7 @@ const settleSplitStatus = async (bookId, splitId, utcDate) => {
       "UPDATE split SET split.current_balance = split.current_balance+? WHERE id IN(Select * FROM (SELECT id FROM cash_flows.split WHERE account_id = ? and user_id = ?)as s)",
       [result[0].balance, result[0].account_id, result[0].paid_user_id]
     );
-    await pool.query(
+    await conn.query(
       `INSERT INTO account (book_id, paid_user_id, tag_id, type_id, amount, date, split, note, is_ignored) VALUES (?),(?)`,
       [
         [
