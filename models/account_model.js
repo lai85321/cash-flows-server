@@ -1,3 +1,4 @@
+const { end } = require("../database");
 const pool = require("../database");
 
 const createAccount = async (account) => {
@@ -19,7 +20,7 @@ const getAccountList = async (bookId, startTime, endTime) => {
   const sql = `SELECT account.id, account.book_id, account.paid_user_id, account.tag_id, account.type_id, account.amount, convert_tz(account.date,'+00:00','+08:00') as date, account.split, account.note, account.is_ignored, tag.tag,user.name FROM cash_flows.account
   INNER JOIN cash_flows.tag ON account.tag_id=tag.id
   INNER JOIN cash_flows.user ON account.paid_user_id=user.id
-  WHERE account.book_id = ? and is_ignored=0 and date between ? and ?
+  WHERE account.book_id = ? and is_ignored=0 and date >= ? and date < ?
   order by account.date DESC`;
   const bind = [bookId, startTime, endTime];
   const [result] = await pool.query(sql, bind);
@@ -52,81 +53,6 @@ const getMonthTagPie = async (bookId, startTime, endTime) => {
   return result;
 };
 
-const getMonthIncome = async (bookId, startTime, endTime) => {
-  const sql = `SELECT paid_user_id as id, sum(amount) as income FROM cash_flows.account\
-   where book_id =? and type_id=1 and date between ? and ? group by paid_user_id;`;
-  const bind = [bookId, startTime, endTime];
-  const [result] = await pool.query(sql, bind);
-  return result;
-};
-
-const getMonthUnsplit = async (bookId, startTime, endTime) => {
-  const sql = `SELECT paid_user_id as id, sum(amount) as expense FROM cash_flows.account\
-   where book_id =? and split=0 and type_id=2 and date between ? and ? group by paid_user_id;`;
-  const bind = [bookId, startTime, endTime];
-  const [result] = await pool.query(sql, bind);
-  return result;
-};
-
-const getMonthBalanced = async (bookId, startTime, endTime) => {
-  const sql = `SELECT split.user_id as id, sum(split.split) as expense FROM cash_flows.split INNER JOIN cash_flows.account ON split.account_id = account.id where account.book_id =? and account.is_ignored =0 and split.is_calculated =1 and date between ? and ?  group by split.user_id;
-  `;
-  const bind = [bookId, startTime, endTime];
-  const [result] = await pool.query(sql, bind);
-  return result;
-};
-
-const getMonthUnbalanced = async (bookId) => {
-  const sql = `SELECT user.id, sum(split.balance+split.current_balance) as balance FROM cash_flows.split INNER JOIN account ON split.account_id=account.id INNER JOIN user
-  ON split.user_id=user.id  where account.book_id= ? and split.is_calculated =0 group by split.user_id ;
-  `;
-  const bind = [bookId];
-  const [result] = await pool.query(sql, bind);
-  return result;
-};
-
-const getMonthsplitHalf = async (bookId, startTime, endTime) => {
-  const sql = `SELECT split.user_id as id, sum(split.split-(split.balance+split.current_balance)*( 1 XOR split.is_calculated) ) as sum FROM cash_flows.split\
-   INNER JOIN cash_flows.account ON split.account_id = account.id\
-    where account.book_id= ? and account.is_ignored =0 and account.date between ? and ? \
-    and split.account_id >= (SELECT min(split.account_id) as account FROM cash_flows.split \
-    INNER JOIN cash_flows.account ON split.account_id = account.id where account.book_id= ? \
-    and account.is_ignored =0 and split.is_calculated =0) group by split.user_id;`;
-  const bind = [bookId, startTime, endTime, bookId];
-  const [result] = await pool.query(sql, bind);
-  return result;
-};
-
-const getWeekUnsplit = async (bookId) => {
-  const sql = `SELECT convert_tz(date,'+00:00','+08:00') as date, paid_user_id, sum(amount) as unsplit FROM account where book_id =? and is_ignored=0 and split =0 and type_id =2 and DATE(date) > (NOW() - INTERVAL 5 DAY) group by date, paid_user_id;`;
-  const bind = [bookId];
-  const [result] = await pool.query(sql, bind);
-  return result;
-};
-
-const getWeekBalanced = async (bookId) => {
-  const sql = `SELECT convert_tz(date,'+00:00','+08:00') as date, split.user_id, sum(split.split) as balanced FROM cash_flows.account\
-  INNER JOIN cash_flows.split ON account.id = split.account_id\
-  where account.book_id = ? and account.is_ignored=0 and account.split =1 \
-  and split.is_calculated = 1 and account.type_id =2 and DATE(account.date) > (NOW() - INTERVAL 5 DAY)\
-  group by split.user_id, account.date;
-  `;
-  const bind = [bookId];
-  const [result] = await pool.query(sql, bind);
-  return result;
-};
-
-const getWeekUnbalanced = async (bookId) => {
-  const sql = `SELECT date, split.user_id, sum(split.split-split.balance-split.current_balance) as unbalanced\
-   FROM cash_flows.account INNER JOIN cash_flows.split ON account.id = split.account_id\
-   where account.book_id = ? and account.is_ignored=0 and account.split =1\ 
-   and split.is_calculated = 0 and account.type_id =2 and DATE(account.date) > (NOW() - INTERVAL 5 DAY)\
-    group by split.user_id, account.date;`;
-  const bind = [bookId];
-  const [result] = await pool.query(sql, bind);
-  return result;
-};
-
 const deleteAccount = async (accountId) => {
   const conn = await pool.getConnection();
   try {
@@ -152,19 +78,19 @@ const deleteAccount = async (accountId) => {
 const getMemberOverview = async (bookId, startTime, endTime) => {
   const sql = `SELECT user.name, account.paid_user_id as user_id, sum(account.amount) as amount FROM cash_flows.account\
   INNER JOIN cash_flows.user ON account.paid_user_id = user.id\
-  WHERE account.book_id = ? and date between ? and ? and is_ignored = 0\
+  WHERE account.book_id = ? and date >= ? and date < ? and is_ignored = 0\
   group by paid_user_id order by paid_user_id;`;
   const bind = [bookId, startTime, endTime];
   const [result] = await pool.query(sql, bind);
   return result;
 };
 
-const getMonthOverview = async (bookId, lastDate) => {
+const getMonthOverview = async (bookId, startTime, endTime) => {
   const sql = `SELECT DATE(convert_tz(account.date,'+00:00','+08:00')) as date, sum(account.amount) as amount FROM cash_flows.account
   INNER JOIN cash_flows.user ON account.paid_user_id = user.id
-  WHERE account.book_id = ? and (account.date) > DATE(? - INTERVAL 1 month) and is_ignored = 0 and tag_id!=4 and type_id =2
+  WHERE account.book_id = ? and account.date >= ? and account.date < ?  and is_ignored = 0 and tag_id!=4 and type_id =2
   group by DATE(convert_tz(account.date,'+00:00','+08:00')) order by DATE(convert_tz(account.date,'+00:00','+08:00'))`;
-  const bind = [bookId, lastDate];
+  const bind = [bookId, startTime, endTime];
   const [result] = await pool.query(sql, bind);
   return result;
 };
@@ -176,14 +102,6 @@ module.exports = {
   getAccountDetail,
   getLastWeekTotal,
   getMonthTagPie,
-  getMonthIncome,
-  getMonthUnsplit,
-  getMonthBalanced,
-  getMonthUnbalanced,
-  getMonthsplitHalf,
-  getWeekUnsplit,
-  getWeekBalanced,
-  getWeekUnbalanced,
   deleteAccount,
   getMemberOverview,
   getMonthOverview,
