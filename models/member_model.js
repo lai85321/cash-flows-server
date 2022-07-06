@@ -1,19 +1,37 @@
-const sqlBind = require("../util/sqlBind");
 const pool = require("../database");
 const createMember = async (member) => {
-  //const result = await sqlBind(`INSERT INTO member SET ?`, member);
   const result = await pool.query(`INSERT INTO member SET ?`, [member]);
   return result.insertId;
 };
 
 const AddMember = async (bookId, email) => {
-  const sql = `INSERT INTO cash_flows.member (book_id, user_id)\
-  VALUES (?,(SELECT id FROM  cash_flows.user WHERE email=?));`;
-  const bind = [bookId, email];
-  //const result = await sqlBind(sql, bind);
-  const [result] = await pool.query(sql, bind);
-
-  return result.insertId;
+  const conn = await pool.getConnection();
+  try {
+    await conn.query("START TRANSACTION");
+    const [userId] = await conn.query("SELECT id FROM user WHERE email=?", [
+      email,
+    ]);
+    if (userId.length === 0) {
+      return {
+        error: "Email Invalid",
+        status: 422,
+      };
+    }
+    const sql = `INSERT INTO cash_flows.member (book_id, user_id) VALUES (?,?);`;
+    const bind = [bookId, userId[0].id];
+    await conn.query(sql, bind);
+    await conn.query("COMMIT");
+    return result;
+  } catch (error) {
+    await conn.query("ROLLBACK");
+    console.log(error);
+    return {
+      error: "User Already Exists",
+      status: 403,
+    };
+  } finally {
+    await conn.release();
+  }
 };
 
 const getMemberList = async (bookId) => {
