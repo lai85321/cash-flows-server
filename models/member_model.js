@@ -50,10 +50,10 @@ const deleteMember = async (bookId, userId) => {
   return result;
 };
 
-const updateOpenTime = async (openTIme, userId, bookId) => {
+const updateOpenTime = async (openTime, userId, bookId) => {
   const [result] = await pool.query(
     `Update member SET member.openTime = ? where book_id = ? and user_id = ?;`,
-    [openTIme, bookId, userId]
+    [openTime, bookId, userId]
   );
   return result;
 };
