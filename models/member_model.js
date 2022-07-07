@@ -50,9 +50,18 @@ const deleteMember = async (bookId, userId) => {
   return result;
 };
 
+const updateOpenTime = async (openTIme, userId, bookId) => {
+  const [result] = await pool.query(
+    `Update member SET member.openTime = ? where book_id = ? and user_id = ?;`,
+    [openTIme, bookId, userId]
+  );
+  return result;
+};
+
 module.exports = {
   createMember,
   AddMember,
   getMemberList,
   deleteMember,
+  updateOpenTime,
 };

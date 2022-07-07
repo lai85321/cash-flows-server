@@ -38,8 +38,20 @@ const deleteMember = async (req, res) => {
   }
 };
 
+const updateOpenTime = async (req, res) => {
+  try {
+    const openTime = new Date();
+    const bookId = req.query.bookId;
+    const userId = req.query.userId;
+    await Member.updateOpenTime(openTime, bookId, userId);
+    return res.status(200).send({ data: "update openTime" });
+  } catch (err) {
+    console.log(err);
+  }
+};
 module.exports = {
   addMember,
   getMemberList,
   deleteMember,
+  updateOpenTime,
 };
