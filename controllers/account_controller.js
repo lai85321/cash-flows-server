@@ -190,41 +190,28 @@ const getMemberOverview = async (req, res) => {
       utcStart,
       utcEnd
     );
-
+    const overviewsMap = await _.groupBy(overviews, (o) => {
+      return o.user_id;
+    });
     const data = members.map((item, idx) => {
       let payment = 0;
       let userIdx = overviews.findIndex((o) => o.user_id == memberIds[idx]);
-      if (userIdx != -1) {
-        payment = overviews[userIdx].amount;
+      let userId = overviews[userIdx].user_id;
+      let expenseId = overviewsMap[userId].findIndex((o) => o.type_id === 2);
+      if (expenseId != -1) {
+        payment += -1 * parseInt(overviewsMap[userId][expenseId].amount);
+      }
+      let settleId = overviewsMap[userId].findIndex((o) => o.type_id === 3);
+      if (settleId != -1) {
+        payment += parseInt(overviewsMap[userId][settleId].amount);
       }
       return {
         id: item.id,
         name: item.name,
         picture: item.picture,
-        payment: -1 * payment,
+        payment: payment,
       };
     });
-    // let incomes = [];
-    // let expenses = [];
-    // const results = memberIds.map((item) => {
-    //   let income = incomeMap[item] ? parseInt(incomeMap[item][0].income) : 0;
-    //   let unsplit = unsplits[item] ? parseInt(unsplits[item][0].expense) : 0;
-    //   let unbalanced = unbalanceds[item]
-    //     ? parseInt(unbalanceds[item][0].balance)
-    //     : 0;
-    //   let balanced = balanceds[item] ? parseInt(balanceds[item][0].expense) : 0;
-    //   let splitHalf = splitHalfs[item] ? parseInt(splitHalfs[item][0].sum) : 0;
-    //   incomes.push(income);
-    //   expenses.push(unsplit + balanced - unbalanced + splitHalf);
-    // });
-    // const data = members.map((item, idx) => {
-    //   return {
-    //     id: item.id,
-    //     name: item.name,
-    //     income: incomes[idx],
-    //     expense: expenses[idx],
-    //   };
-    // });
     return res.status(200).send({ data: data });
   } catch (err) {
     console.log(err);
