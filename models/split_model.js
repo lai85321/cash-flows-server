@@ -88,6 +88,20 @@ const settleSplitStatus = async (bookId, splitId, utcDate) => {
       "SELECT id, balance, current_balance FROM split WHERE id IN(Select * FROM (SELECT id FROM cash_flows.split WHERE account_id = ? and user_id = ?)as s)",
       [result[0].account_id, result[0].paid_user_id]
     );
+    await conn.query(
+      `INSERT INTO message (user_id, paid_user_id, amount, book_id, timestamp, read_status, notice_status) VALUES (?)`,
+      [
+        [
+          result[0].user_id,
+          result[0].paid_user_id,
+          result[0].balance,
+          bookId,
+          utcDate,
+          0,
+          0,
+        ],
+      ]
+    );
     if (
       parseInt(updateResult[0].balance) +
         parseInt(updateResult[0].current_balance) ==
@@ -97,6 +111,22 @@ const settleSplitStatus = async (bookId, splitId, utcDate) => {
         "UPDATE split SET status =1, is_calculated =1 WHERE id =?",
         [updateResult[0].id]
       );
+    }
+    const [end] = await conn.query(
+      "SELECT split_end FROM cash_flows.split where id=?",
+      [splitId]
+    );
+    if (end[0].split_end !== null) {
+      const [status] = await conn.query(
+        "SELECT sum(status) as sum,count(status) as count FROM cash_flows.split where split_end=?",
+        [end[0].split_end]
+      );
+      if (parseInt(status[0].sum) === parseInt(status[0].count)) {
+        const [status] = await conn.query(
+          "UPDATE split SET status =1 WHERE id <=?",
+          [end[0].split_end]
+        );
+      }
     }
     await conn.query("COMMIT");
     return result;

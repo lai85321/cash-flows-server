@@ -95,7 +95,7 @@ const getAccountList = async (req, res) => {
     let totals = [];
     dates.forEach((date) => {
       totalArr = lists[date].map((item) =>
-        item.type_id === 1 ? item.amount : -1 * item.amount
+        item.type_id == 1 ? item.amount : -1 * item.amount
       );
       let total = totalArr.reduce(
         (previousValue, currentValue) => previousValue + currentValue,
@@ -103,6 +103,7 @@ const getAccountList = async (req, res) => {
       );
       totals.push(total);
     });
+
     const accounts = [];
     for (let i = 0; i < dates.length; i++) {
       const details = lists[dates[i]].map((item) => {
@@ -115,7 +116,7 @@ const getAccountList = async (req, res) => {
           id: item.id,
           name: item.name,
           status: splitStatus,
-          amount: item.type_id === 1 ? item.amount : -1 * item.amount,
+          amount: item.type_id !== 2 ? item.amount : -1 * item.amount,
           tag: item.tag,
           note: item.note,
         };

@@ -1,7 +1,7 @@
 const pool = require("../database");
 
 const getBalanceList = async (bookId) => {
-  const sql = `SELECT convert_tz(account.date,'+00:00','+08:00') as date,t.id as splitId, account.id as account_id, a.NAME as user, b.NAME as paidUser, t.balance \
+  const sql = `SELECT account.date as date,t.id as splitId, account.id as account_id, a.NAME as user, b.NAME as paidUser, t.balance \
   FROM split t\
   JOIN user a ON t.user_id =a.id\
   JOIN user b ON t.paid_user_id = b.id\
