@@ -139,10 +139,16 @@ const getGroupBalanceList = async (req, res) => {
 const updateSplitStatus = async (req, res) => {
   try {
     const bookId = req.query.bookId;
+    const userId = req.query.userId;
     const splitId = req.query.splitId;
     const now = new Date();
     const utcDate = new Date(now.toUTCString().slice(0, -4));
-    await Split.settleSplitStatus(parseInt(bookId), parseInt(splitId), utcDate);
+    await Split.settleSplitStatus(
+      parseInt(bookId),
+      parseInt(userId),
+      parseInt(splitId),
+      utcDate
+    );
     const response = await Balance.getBalanceList(bookId);
     let details = [];
     let splitIds = [];

@@ -40,8 +40,7 @@ const updateSplitIsCalculated = async (splitId) => {
   return result.insertId;
 };
 
-const settleSplitStatus = async (bookId, splitId, utcDate) => {
-  //const sql = `UPDATE split SET status=1 where account_id IN  (SELECT * FROM (SELECT account_id FROM cash_flows.split where id=?) as s);`;
+const settleSplitStatus = async (bookId, userId, splitId, utcDate) => {
   const conn = await pool.getConnection();
   try {
     await conn.query("START TRANSACTION");
@@ -50,7 +49,7 @@ const settleSplitStatus = async (bookId, splitId, utcDate) => {
       [splitId]
     );
     await conn.query(
-      "UPDATE split SET status =1,  is_calculated =1, split.current_balance = split.current_balance-? WHERE id =?",
+      "UPDATE split SET status =1, is_calculated =1, split.current_balance = split.current_balance-? WHERE id =?",
       [result[0].balance, splitId]
     );
     await conn.query(
@@ -88,20 +87,40 @@ const settleSplitStatus = async (bookId, splitId, utcDate) => {
       "SELECT id, balance, current_balance FROM split WHERE id IN(Select * FROM (SELECT id FROM cash_flows.split WHERE account_id = ? and user_id = ?)as s)",
       [result[0].account_id, result[0].paid_user_id]
     );
-    await conn.query(
-      `INSERT INTO message (user_id, paid_user_id, amount, book_id, timestamp, read_status, notice_status) VALUES (?)`,
-      [
+    if (userId != result[0].user_id) {
+      await conn.query(
+        `INSERT INTO message (settle_user_id,user_id, paid_user_id, amount, book_id, timestamp, read_status, notice_status) VALUES (?)`,
         [
-          result[0].user_id,
-          result[0].paid_user_id,
-          result[0].balance,
-          bookId,
-          utcDate,
-          0,
-          0,
-        ],
-      ]
-    );
+          [
+            userId,
+            result[0].user_id,
+            result[0].paid_user_id,
+            -1 * parseInt(result[0].balance),
+            bookId,
+            utcDate,
+            0,
+            0,
+          ],
+        ]
+      );
+    }
+    if (userId != result[0].paid_user_id) {
+      await conn.query(
+        `INSERT INTO message (settle_user_id,user_id, paid_user_id, amount, book_id, timestamp, read_status, notice_status) VALUES (?)`,
+        [
+          [
+            userId,
+            result[0].paid_user_id,
+            result[0].user_id,
+            parseInt(result[0].balance),
+            bookId,
+            utcDate,
+            0,
+            0,
+          ],
+        ]
+      );
+    }
     if (
       parseInt(updateResult[0].balance) +
         parseInt(updateResult[0].current_balance) ==
