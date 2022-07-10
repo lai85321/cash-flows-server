@@ -40,8 +40,8 @@ const getSingleDailyChart = async (req, res) => {
 const getSingleTagPieChart = async (req, res) => {
   try {
     const bookId = req.query.bookId;
-    let startTime = new Date(req.query.startTime);
-    let endTime = new Date(req.query.startTime);
+    let startTime = new Date(parseInt(req.query.startTime));
+    let endTime = new Date(parseInt(req.query.startTime));
     endTime.setMonth(startTime.getMonth() + 1);
     const utcStart = new Date(startTime.toUTCString().slice(0, -4));
     const utcEnd = new Date(endTime.toUTCString().slice(0, -4));
@@ -55,8 +55,8 @@ const getSingleTagPieChart = async (req, res) => {
 const getMonthBalanceChart = async (req, res) => {
   try {
     const bookId = req.query.bookId;
-    let startTime = new Date(req.query.startTime);
-    let endTime = new Date(req.query.startTime);
+    let startTime = new Date(parseInt(req.query.startTime));
+    let endTime = new Date(parseInt(req.query.startTime));
     endTime.setMonth(startTime.getMonth() + 1);
     const utcStart = new Date(startTime.toUTCString().slice(0, -4));
     const utcEnd = new Date(endTime.toUTCString().slice(0, -4));

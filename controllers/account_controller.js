@@ -45,19 +45,23 @@ const createAccount = async (req, res) => {
       );
       const idx = memberIds.findIndex((item) => item === parseInt(paidId));
       balance[idx] = (sum - splits[idx]) * -1;
-      const splitData = splits.map((item, idx) => {
-        return [
-          accountId,
-          memberIds[idx],
-          parseInt(paidId),
-          splits[idx],
-          balance[idx],
-          0,
-          0,
-          0,
-          1,
-        ];
+      let splitData = [];
+      splits.forEach((item, idx) => {
+        if (splits[idx] != 0) {
+          splitData.push([
+            accountId,
+            memberIds[idx],
+            parseInt(paidId),
+            splits[idx],
+            balance[idx],
+            0,
+            0,
+            0,
+            1,
+          ]);
+        }
       });
+
       await Split.createSplit(splitData);
     }
     return res.status(200).send({ message: `add new account` });
@@ -69,8 +73,8 @@ const createAccount = async (req, res) => {
 const getAccountList = async (req, res) => {
   try {
     const bookId = req.query.bookId;
-    let startTime = new Date(req.query.startTime);
-    let endTime = new Date(req.query.startTime);
+    let startTime = new Date(parseInt(req.query.startTime));
+    let endTime = new Date(parseInt(req.query.startTime));
     endTime.setMonth(startTime.getMonth() + 1);
     const utcStart = new Date(startTime.toUTCString().slice(0, -4));
     const utcEnd = new Date(endTime.toUTCString().slice(0, -4));
@@ -178,8 +182,8 @@ const getAccountDetail = async (req, res) => {
 const getMemberOverview = async (req, res) => {
   try {
     const bookId = parseInt(req.query.bookId);
-    let startTime = new Date(req.query.startTime);
-    let endTime = new Date(req.query.startTime);
+    let startTime = new Date(parseInt(req.query.startTime));
+    let endTime = new Date(parseInt(req.query.startTime));
     endTime.setMonth(startTime.getMonth() + 1);
     const utcStart = new Date(startTime.toUTCString().slice(0, -4));
     const utcEnd = new Date(endTime.toUTCString().slice(0, -4));
