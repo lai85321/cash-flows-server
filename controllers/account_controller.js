@@ -200,14 +200,16 @@ const getMemberOverview = async (req, res) => {
     const data = members.map((item, idx) => {
       let payment = 0;
       let userIdx = overviews.findIndex((o) => o.user_id == memberIds[idx]);
-      let userId = overviews[userIdx].user_id;
-      let expenseId = overviewsMap[userId].findIndex((o) => o.type_id === 2);
-      if (expenseId != -1) {
-        payment += -1 * parseInt(overviewsMap[userId][expenseId].amount);
-      }
-      let settleId = overviewsMap[userId].findIndex((o) => o.type_id === 3);
-      if (settleId != -1) {
-        payment += parseInt(overviewsMap[userId][settleId].amount);
+      if (userIdx != -1) {
+        let userId = overviews[userIdx].user_id;
+        let expenseId = overviewsMap[userId].findIndex((o) => o.type_id === 2);
+        if (expenseId != -1) {
+          payment += -1 * parseInt(overviewsMap[userId][expenseId].amount);
+        }
+        let settleId = overviewsMap[userId].findIndex((o) => o.type_id === 3);
+        if (settleId != -1) {
+          payment += parseInt(overviewsMap[userId][settleId].amount);
+        }
       }
       return {
         id: item.id,
