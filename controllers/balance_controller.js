@@ -11,6 +11,7 @@ const getBalanceList = async (req, res) => {
     let splitIds = [];
     let dates = [];
     for (let i = 0; i < response.length; i++) {
+      response[i].date.setHours(response[i].date.getHours() + 8);
       dates.push(response[i].date.toString().slice(0, 15));
       splitIds.push(parseInt(response[i].splitId));
       details.push(
