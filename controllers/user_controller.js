@@ -10,7 +10,6 @@ const { SALTROUNDS, JWT_SECRET, JWT_EXPIRES_IN } = process.env;
 const userSignup = async (req, res) => {
   let { name } = req.body;
   const { provider, email, password, picture } = req.body;
-
   if (!name || !email || !password) {
     res.status(400).send({ error: "Please make sure the fields are valid" });
     return;
@@ -21,7 +20,8 @@ const userSignup = async (req, res) => {
   }
   name = validator.escape(name);
   const pwdHash = await bcrypt.hash(password, parseInt(SALTROUNDS));
-  const response = await User.signUp(provider, name, email, pwdHash);
+  const user = [["native", name, email, pwdHash]];
+  const response = await User.signUp(user);
   if (response.error) {
     return res.status(response.status).send({ error: response.error });
   }
@@ -38,7 +38,7 @@ const userSignup = async (req, res) => {
     access_token: token,
     access_expired: JWT_EXPIRES_IN,
     user: {
-      id: user.id,
+      id: response.id,
       provider: provider,
       name: name,
       email: email,

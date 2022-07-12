@@ -1,15 +1,9 @@
 const pool = require("../database");
 
-const signUp = async (provider, name, email, pwdHash) => {
+const signUp = async (user) => {
   try {
-    let user = {
-      provider: "native",
-      name: name,
-      email: email,
-      password: pwdHash,
-    };
-    const sql = "INSERT INTO user SET ?";
-    const result = await pool.query(sql, [user]);
+    const sql = "INSERT INTO user (provider, name, email, password) VALUES ?";
+    const [result] = await pool.query(sql, [user]);
     user.id = result.insertId;
     return user;
   } catch (error) {
