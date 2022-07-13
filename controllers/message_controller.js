@@ -5,8 +5,8 @@ const getMessageList = async (req, res) => {
     const userId = req.query.userId;
     const response = await Message.getMessageList(userId);
     const notice = response.reduce(
-      (prev, curr) => prev | curr.notice_status,
-      0
+      (prev, curr) => prev & curr.notice_status,
+      1
     );
     response.map((item) => {
       item.timestamp = item.timestamp.toString().slice(4, 25);

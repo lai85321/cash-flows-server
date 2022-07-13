@@ -6,7 +6,7 @@ const getMessageList = async (userId) => {
     LEFT JOIN cash_flows.user a ON message.paid_user_id=a.id 
     LEFT JOIN cash_flows.user b ON message.settle_user_id = b.id
     LEFT JOIN cash_flows.book ON message.book_id = book.id
-    WHERE message.user_id = ?`,
+    WHERE message.user_id = ? ORDER BY timestamp DESC`,
     [userId]
   );
   return result;
