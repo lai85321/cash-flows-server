@@ -19,7 +19,6 @@ const getBalanceList = async (req, res) => {
       );
     }
     const result = await _.groupBy(response, (r) => {
-      r.date.setHours(r.date.getHours() + 8);
       return r.date.toString().slice(0, 15);
     });
     let datesKey = Object.keys(result);
