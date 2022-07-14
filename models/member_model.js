@@ -19,7 +19,7 @@ const AddMember = async (bookId, email) => {
     }
     const sql = `INSERT INTO cash_flows.member (book_id, user_id) VALUES (?,?);`;
     const bind = [bookId, userId[0].id];
-    await conn.query(sql, bind);
+    const [result] = await conn.query(sql, bind);
     await conn.query("COMMIT");
     return result;
   } catch (error) {
