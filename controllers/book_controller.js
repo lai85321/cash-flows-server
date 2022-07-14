@@ -28,7 +28,18 @@ const getBookList = async (req, res) => {
   }
 };
 
+const budgetUpdate = async (req, res) => {
+  try {
+    const bookId = req.query.id;
+    const updateData = req.body;
+    const result = await Book.budgetUpdate(updateData, bookId);
+    return res.status(200).send({ data: result[0] });
+  } catch (err) {
+    console.log(err);
+  }
+};
 module.exports = {
   createBook,
   getBookList,
+  budgetUpdate,
 };

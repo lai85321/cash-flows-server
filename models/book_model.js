@@ -14,7 +14,16 @@ const getBookList = async (userId) => {
   return result;
 };
 
+const budgetUpdate = async (updateData, bookId) => {
+  const [result] = await pool.query("UPDATE book SET ? WHERE id=?", [
+    updateData,
+    bookId,
+  ]);
+  return result;
+};
+
 module.exports = {
   createBook,
   getBookList,
+  budgetUpdate,
 };

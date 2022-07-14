@@ -133,6 +133,7 @@ const getAccountList = async (req, res) => {
       accounts.push(data);
     }
     const dataObj = {
+      budget: response[0].budget,
       income: income,
       expense: expense,
       balance: balance,

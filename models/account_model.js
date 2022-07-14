@@ -17,9 +17,10 @@ const getOverview = async (bookId, startTime, endTime) => {
 };
 
 const getAccountList = async (bookId, startTime, endTime) => {
-  const sql = `SELECT account.id, account.book_id, account.paid_user_id, account.tag_id, account.type_id, account.amount, convert_tz(account.date,'+00:00','+08:00') as date, account.split, account.note, account.is_ignored, tag.tag,user.name FROM cash_flows.account
+  const sql = `SELECT account.id, account.book_id, book.budget, account.paid_user_id, account.tag_id, account.type_id, account.amount, convert_tz(account.date,'+00:00','+08:00') as date, account.split, account.note, account.is_ignored, tag.tag,user.name FROM cash_flows.account
   INNER JOIN cash_flows.tag ON account.tag_id=tag.id
   INNER JOIN cash_flows.user ON account.paid_user_id=user.id
+  INNER JOIN cash_flows.book ON account.book_id=book.id
   WHERE account.book_id = ? and is_ignored=0 and date >= ? and date < ?
   order by account.date DESC`;
   const bind = [bookId, startTime, endTime];
