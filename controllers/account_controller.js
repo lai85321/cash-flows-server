@@ -18,6 +18,9 @@ const createAccount = async (req, res) => {
     paidId,
     splits,
   } = req.body;
+  if (note.trim() === "") {
+    return res.status(400).send({ error: "Please enter a valid note" });
+  }
   const data = [
     [
       parseInt(bookId),

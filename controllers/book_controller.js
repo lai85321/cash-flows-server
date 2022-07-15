@@ -3,6 +3,9 @@ const Member = require("../models/member_model");
 
 const createBook = async (req, res) => {
   const { userId, name, currencyId } = req.body;
+  if (name.trim() === "") {
+    return res.status(400).send({ error: "Please enter a valid name" });
+  }
   const bookData = [[name, parseInt(currencyId)]];
   try {
     const bookId = await Book.createBook(bookData);

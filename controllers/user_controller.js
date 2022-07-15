@@ -19,6 +19,12 @@ const userSignup = async (req, res) => {
     return;
   }
   name = validator.escape(name);
+  if (name.trim() === "") {
+    return res.status(400).send({ error: "Please enter a valid name" });
+  }
+  if (password.trim() === "") {
+    return res.status(400).send({ error: "Please enter a valid password" });
+  }
   const pwdHash = await bcrypt.hash(password, parseInt(SALTROUNDS));
   const user = [["native", name, email, pwdHash]];
   const response = await User.signUp(user);
@@ -122,6 +128,9 @@ const userUpdate = async (req, res) => {
       return res.status(200).send({ data: result[0] });
     } else {
       const updateData = req.body;
+      if (updateData.name.trim() === "") {
+        return res.status(400).send({ error: "Please enter a valid name" });
+      }
       const result = await User.userUpdate(updateData, userId);
       return res.status(200).send({ data: result[0] });
     }
