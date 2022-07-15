@@ -40,8 +40,16 @@ const userUpdate = async (updateData, userId) => {
   }
 };
 
+const userCheck = async (userId) => {
+  const [result] = await pool.query(
+    "SELECT * FROM user WHERE provider= 'native' and id=?",
+    userId
+  );
+  return result;
+};
 module.exports = {
   signUp,
   nativeSignIn,
   userUpdate,
+  userCheck,
 };

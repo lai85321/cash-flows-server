@@ -129,8 +129,19 @@ const userUpdate = async (req, res) => {
     console.log(err);
   }
 };
+
+const userCheck = async (req, res) => {
+  try {
+    const userId = req.query.id;
+    const result = await User.userCheck(userId);
+    return res.status(200).send({ data: result[0] });
+  } catch (err) {
+    console.log(err);
+  }
+};
 module.exports = {
   userSignup,
   userSignin,
   userUpdate,
+  userCheck,
 };

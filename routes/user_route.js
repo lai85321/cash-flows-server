@@ -7,6 +7,7 @@ const {
   userSignup,
   userSignin,
   userUpdate,
+  userCheck,
 } = require("../controllers/user_controller");
 
 //multer setting
@@ -22,5 +23,6 @@ const pictureUpload = uploadPath.single("picture");
 router.route("/user/signup").post(userSignup);
 router.route("/user/signin").post(userSignin);
 router.route("/user").patch(auth, pictureUpload, userUpdate);
+router.route("/user").get(auth, userCheck);
 
 module.exports = router;
