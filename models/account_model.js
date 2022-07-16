@@ -48,7 +48,7 @@ const getLastWeekTotal = async (bookId) => {
 };
 
 const getMonthTagPie = async (bookId, startTime, endTime) => {
-  const sql = `SELECT  tag.tag, sum(account.amount) as total FROM account INNER JOIN tag ON account.tag_id= tag.id WHERE book_id =? and tag_id != 4 and is_ignored=0 and date between ? and ? group by tag_id`;
+  const sql = `SELECT  tag.tag, sum(account.amount) as total FROM account INNER JOIN tag ON account.tag_id= tag.id WHERE book_id =? and tag_id != 4 and tag_id != 9 and is_ignored=0 and date between ? and ? group by tag_id`;
   const bind = [bookId, startTime, endTime];
   const [result] = await pool.query(sql, bind);
   return result;
