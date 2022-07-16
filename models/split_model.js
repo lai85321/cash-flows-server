@@ -33,9 +33,9 @@ const updateSplitStatus = async (bookId) => {
   return result.insertId;
 };
 
-const updateSplitIsCalculated = async (splitId) => {
-  const sql = `UPDATE split SET is_calculated = 1 WHERE id < ?;`;
-  const bind = [splitId];
+const updateSplitIsCalculated = async (splitId, bookId) => {
+  const sql = `UPDATE split INNER JOIN account ON split.account_id = account.id SET is_calculated = 1 WHERE split.id < ? and account.book_id=?;`;
+  const bind = [splitId, bookId];
   const [result] = await pool.query(sql, bind);
   return result.insertId;
 };
@@ -142,8 +142,8 @@ const settleSplitStatus = async (bookId, userId, splitId, utcDate) => {
       );
       if (parseInt(status[0].sum) === parseInt(status[0].count)) {
         const [status] = await conn.query(
-          "UPDATE split SET status =1 WHERE id <=?",
-          [end[0].split_end]
+          "UPDATE split INNER JOIN account ON split.account_id = account.id SET status =1 WHERE split.id <=? and account.book_id = ?",
+          [end[0].split_end, bookId]
         );
       }
     }

@@ -116,7 +116,7 @@ const getGroupBalanceList = async (req, res) => {
     splitData = [...splitData, ...splitData1];
     await Split.updateSplitStatus(bookId);
     const splitId = await Split.createBalancedSplit(splitData);
-    const resultId = await Split.updateSplitIsCalculated(splitId);
+    const resultId = await Split.updateSplitIsCalculated(splitId, bookId);
 
     const responseData = details.map((item, idx) => {
       return {
