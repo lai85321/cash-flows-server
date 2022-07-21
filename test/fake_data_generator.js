@@ -1,7 +1,16 @@
 require("dotenv").config();
 const { NODE_ENV } = process.env;
 const bcrypt = require("bcrypt");
-const { users, books, currency, members } = require("./fake_data");
+const {
+  users,
+  books,
+  currency,
+  members,
+  tags,
+  types,
+  accounts,
+  splits,
+} = require("./fake_data");
 const pool = require("../database");
 const { SALTROUNDS } = process.env;
 
@@ -45,6 +54,32 @@ async function _createFakeMember(conn) {
   );
 }
 
+async function _createFakeTag(conn) {
+  return await conn.query("INSERT INTO tag (id, tag) VALUES ?", [
+    tags.map((x) => Object.values(x)),
+  ]);
+}
+
+async function _createFakeType(conn) {
+  return await conn.query("INSERT INTO type (id, type) VALUES ?", [
+    types.map((x) => Object.values(x)),
+  ]);
+}
+
+async function _createFakeAccount(conn) {
+  return await conn.query(
+    "INSERT INTO account (id, book_id, paid_user_id, tag_id, type_id, amount, date, split, note, is_ignored) VALUES ?",
+    [accounts.map((x) => Object.values(x))]
+  );
+}
+
+async function _createFakeSplit(conn) {
+  return await conn.query(
+    "INSERT INTO split (id, account_id, user_id, paid_user_id, split, balance, status, split_start, split_end, current_balance, is_calculated, is_handwrited) VALUES ?",
+    [splits.map((x) => Object.values(x))]
+  );
+}
+
 async function createFakeData() {
   if (NODE_ENV !== "test") {
     console.log("Not in test env");
@@ -57,6 +92,9 @@ async function createFakeData() {
   await _createFakeCurrency(conn);
   await _createFakeBook(conn);
   await _createFakeMember(conn);
+  await _createFakeTag(conn);
+  await _createFakeAccount(conn);
+  await _createFakeSplit(conn);
   await conn.query("SET FOREIGN_KEY_CHECKS = ?", 1);
   await conn.query("COMMIT");
   await conn.release();
@@ -77,7 +115,16 @@ async function truncateFakeData() {
     await conn.release();
     return;
   };
-  const tables = ["user", "currency", "book", "member"];
+  const tables = [
+    "user",
+    "currency",
+    "book",
+    "member",
+    "tag",
+    "type",
+    "account",
+    "split",
+  ];
   for (let table of tables) {
     await truncateTable(table);
     console.log(`delete data in ${table}`);

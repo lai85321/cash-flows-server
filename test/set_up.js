@@ -16,7 +16,6 @@ before(async () => {
   if (NODE_ENV !== "test") {
     throw "Not in test env";
   }
-  console.log(NODE_ENV);
   await truncateFakeData();
   await createFakeData();
 });
