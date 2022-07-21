@@ -1,8 +1,7 @@
 const Account = require("../models/account_model");
 const Member = require("../models/member_model");
-const Balance = require("../models/balance_model");
 const Split = require("../models/split_model");
-const balance = require("../util/getBalance");
+const getMonthRange = require("../util/getMonthRange");
 const _ = require("lodash");
 
 const createAccount = async (req, res) => {
@@ -18,9 +17,11 @@ const createAccount = async (req, res) => {
     paidId,
     splits,
   } = req.body;
+
   if (note.trim() === "") {
     return res.status(400).send({ error: "Please enter a valid note" });
   }
+
   const data = [
     [
       parseInt(bookId),
@@ -34,13 +35,13 @@ const createAccount = async (req, res) => {
       0,
     ],
   ];
+
   try {
     const accountId = await Account.createAccount(data);
     if (split === 1) {
       const members = await Member.getMemberList(parseInt(bookId));
       const memberIds = members.map((item) => item.id);
-      let balance = [];
-      balance = [...splits];
+      let balance = [...splits];
       const sum = splits.reduce(
         (previousValue, currentValue) =>
           previousValue + Number.parseFloat(currentValue),
@@ -64,7 +65,6 @@ const createAccount = async (req, res) => {
           ]);
         }
       });
-
       await Split.createSplit(splitData);
     }
     return res.status(200).send({ message: `add new account` });
@@ -76,12 +76,12 @@ const createAccount = async (req, res) => {
 const getAccountList = async (req, res) => {
   try {
     const bookId = req.query.bookId;
-    let startTime = new Date(parseInt(req.query.startTime));
-    let endTime = new Date(parseInt(req.query.startTime));
-    endTime.setMonth(startTime.getMonth() + 1);
-    const utcStart = new Date(startTime.toUTCString().slice(0, -4));
-    const utcEnd = new Date(endTime.toUTCString().slice(0, -4));
-    const overview = await Account.getOverview(bookId, utcStart, utcEnd);
+    const monthRange = getMonthRange(req.query.startTime);
+    const overview = await Account.getOverview(
+      bookId,
+      monthRange.start,
+      monthRange.end
+    );
     const incomeExist = overview.find((item) => item.type_id == 1);
     const expenseExist = overview.find((item) => item.type_id == 2);
     let income = 0;
@@ -93,18 +93,26 @@ const getAccountList = async (req, res) => {
       expense = -1 * parseInt(expenseExist.total);
     }
     const balance = income + expense;
-    const response = await Account.getAccountList(bookId, utcStart, utcEnd);
-    const status = await Split.checkSplitStatus(bookId, utcStart, utcEnd);
+    const response = await Account.getAccountList(
+      bookId,
+      monthRange.start,
+      monthRange.end
+    );
+    const status = await Split.checkSplitStatus(
+      bookId,
+      monthRange.start,
+      monthRange.end
+    );
     const lists = await _.groupBy(response, (r) => {
       return r.date.toString().slice(0, 15);
     });
     const dates = Object.keys(lists);
     let totals = [];
     dates.forEach((date) => {
-      totalArr = lists[date].map((item) =>
+      totalWithSigns = lists[date].map((item) =>
         item.type_id == 1 ? item.amount : -1 * item.amount
       );
-      let total = totalArr.reduce(
+      let total = totalWithSigns.reduce(
         (previousValue, currentValue) => previousValue + currentValue,
         0
       );
@@ -128,14 +136,14 @@ const getAccountList = async (req, res) => {
           note: item.note,
         };
       });
-      let data = {
+      let accountData = {
         date: dates[i].slice(4, 10),
         total: totals[i],
         details: details,
       };
-      accounts.push(data);
+      accounts.push(accountData);
     }
-    const dataObj = {
+    const data = {
       budget: response.length === 0 ? 0 : response[0].budget,
       income: income,
       expense: expense,
@@ -143,7 +151,7 @@ const getAccountList = async (req, res) => {
       daily: accounts,
     };
 
-    return res.status(200).send({ data: dataObj });
+    return res.status(200).send({ data });
   } catch (err) {
     console.log(err);
   }
@@ -186,33 +194,31 @@ const getAccountDetail = async (req, res) => {
 const getMemberOverview = async (req, res) => {
   try {
     const bookId = parseInt(req.query.bookId);
-    let startTime = new Date(parseInt(req.query.startTime));
-    let endTime = new Date(parseInt(req.query.startTime));
-    endTime.setMonth(startTime.getMonth() + 1);
-    const utcStart = new Date(startTime.toUTCString().slice(0, -4));
-    const utcEnd = new Date(endTime.toUTCString().slice(0, -4));
+    const monthRange = getMonthRange(req.query.startTime);
     const members = await Member.getMemberList(parseInt(bookId));
     const memberIds = members.map((item) => item.id);
     const overviews = await Account.getMemberOverview(
       parseInt(bookId),
-      utcStart,
-      utcEnd
+      monthRange.start,
+      monthRange.end
     );
-    const overviewsMap = await _.groupBy(overviews, (o) => {
+    const overviewMaps = await _.groupBy(overviews, (o) => {
       return o.user_id;
     });
     const data = members.map((item, idx) => {
       let payment = 0;
       let userIdx = overviews.findIndex((o) => o.user_id == memberIds[idx]);
       if (userIdx != -1) {
-        let userId = overviews[userIdx].user_id;
-        let expenseId = overviewsMap[userId].findIndex((o) => o.type_id === 2);
+        const userId = overviews[userIdx].user_id;
+        const expenseId = overviewMaps[userId].findIndex(
+          (o) => o.type_id === 2
+        );
         if (expenseId != -1) {
-          payment += -1 * parseInt(overviewsMap[userId][expenseId].amount);
+          payment += -1 * parseInt(overviewMaps[userId][expenseId].amount);
         }
-        let settleId = overviewsMap[userId].findIndex((o) => o.type_id === 3);
+        const settleId = overviewMaps[userId].findIndex((o) => o.type_id === 3);
         if (settleId != -1) {
-          payment += parseInt(overviewsMap[userId][settleId].amount);
+          payment += parseInt(overviewMaps[userId][settleId].amount);
         }
       }
       return {
@@ -232,87 +238,7 @@ const deleteAccount = async (req, res) => {
   try {
     const removeId = parseInt(req.query.id);
     const result = await Account.getAccountDetail(removeId);
-    if (result[0].is_calculated == 1) {
-      let recalUserIds = [];
-      let recalBalance = [];
-      for (let i = 0; i < result.length; i++) {
-        if (result[i].status === 0) {
-          recalUserIds.push(result[i].user_id);
-          recalBalance.push(result[i].balance);
-        }
-      }
-      const bookId = parseInt(req.query.bookId);
-      const userId = parseInt(req.query.userId);
-      const response = await Balance.getGroupBalanceList(bookId);
-      const userIds = response.map((item) => item.id);
-      const users = response.map((item) => item.name);
-      const amount = response.map((item) => parseInt(item.balance));
-      let newAmount = [];
-      for (let i = 0; i < amount.length; i++) {
-        let id = recalUserIds.findIndex((item) => item === userIds[i]);
-        amount[i] = amount[i] + recalBalance[id];
-      }
-      const split = balance(amount);
-      const details = [];
-      split.forEach((item, idx) => {
-        let oweName = users[item[0]];
-        let lendName = users[item[1]];
-        details.push(`${oweName} owes ${lendName} $${item[2]}`);
-      });
-      const now = new Date();
-      const utcDate = new Date(now.toUTCString().slice(0, -4));
-      const splitAmount = split.map((item, idx) => item[2]);
-      const accountData = splitAmount.map((item, idx) => {
-        return [
-          bookId,
-          parseInt(userId),
-          4,
-          3,
-          item,
-          utcDate,
-          1,
-          "group balance",
-          1,
-        ];
-      });
-      const accountId = await Account.createAccount(accountData);
-      const historyId = await Split.getBalanceRange(bookId);
-      let splitData = split.map((item, idx) => {
-        return [
-          accountId + idx,
-          parseInt(userIds[item[0]]),
-          parseInt(userIds[item[1]]),
-          parseInt(item[2]),
-          parseInt(item[2]),
-          0,
-          historyId[0].min,
-          historyId[0].max,
-          0,
-          0,
-          0,
-        ];
-      });
-      const splitData1 = split.map((item, idx) => {
-        return [
-          accountId + idx,
-          parseInt(userIds[item[1]]),
-          parseInt(userIds[item[1]]),
-          0,
-          parseInt(item[2]) * -1,
-          0,
-          historyId[0].min,
-          historyId[0].max,
-          0,
-          0,
-          0,
-        ];
-      });
-      splitData = [...splitData, ...splitData1];
-      await Split.updateSplitStatus(bookId);
-      const splitId = await Split.createBalancedSplit(splitData);
-      const resultId = await Split.updateSplitIsCalculated(splitId);
-      await Account.deleteAccount(removeId);
-    } else {
+    if (result[0].is_calculated !== 1) {
       await Account.deleteAccount(removeId);
     }
     return res.status(200).send({ data: "Delete account" });

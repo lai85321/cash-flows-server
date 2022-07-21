@@ -3,7 +3,7 @@ const Book = require("../models/book_model");
 const addMember = async (req, res) => {
   try {
     const { bookId, email } = req.body;
-    const result = await Member.AddMember(bookId, email);
+    const result = await Member.addMember(bookId, email);
     const memberData = await Member.getMemberList(bookId);
     if (result.error) {
       return res

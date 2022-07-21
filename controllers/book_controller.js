@@ -14,8 +14,8 @@ const createBook = async (req, res) => {
       book_id: bookId,
       openTIme: new Date(),
     };
-    const result = await Member.createMember(memberData);
-    return res.status(200).send({ data: { bookId: bookId } });
+    await Member.createMember(memberData);
+    return res.status(200).send({ data: { bookId } });
   } catch (err) {
     console.log(err);
   }
@@ -24,25 +24,26 @@ const createBook = async (req, res) => {
 const getBookList = async (req, res) => {
   try {
     const userId = req.query.userId;
-    const result = await Book.getBookList(userId);
-    return res.status(200).send({ data: result });
+    const data = await Book.getBookList(userId);
+    return res.status(200).send({ data });
   } catch (err) {
     console.log(err);
   }
 };
 
-const budgetUpdate = async (req, res) => {
+const updateBudget = async (req, res) => {
   try {
     const bookId = req.query.id;
     const updateData = req.body;
-    const result = await Book.budgetUpdate(updateData, bookId);
+    const result = await Book.updateBudget(updateData, bookId);
     return res.status(200).send({ data: result[0] });
   } catch (err) {
     console.log(err);
   }
 };
+
 module.exports = {
   createBook,
   getBookList,
-  budgetUpdate,
+  updateBudget,
 };

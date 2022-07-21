@@ -16,7 +16,7 @@ const getMessageList = async (req, res) => {
       detail: response,
     };
 
-    return res.status(200).send({ data: data });
+    return res.status(200).send({ data });
   } catch (err) {
     console.log(err);
   }
@@ -25,12 +25,13 @@ const getMessageList = async (req, res) => {
 const updateNoticeStatus = async (req, res) => {
   try {
     const userId = req.query.userId;
-    const response = await Message.updateNoticeStatus(userId);
+    await Message.updateNoticeStatus(userId);
     return res.status(200).send({ data: "update notice status" });
   } catch (err) {
     console.log(err);
   }
 };
+
 module.exports = {
   getMessageList,
   updateNoticeStatus,

@@ -4,11 +4,11 @@ const auth = require("../util/auth");
 const {
   createBook,
   getBookList,
-  budgetUpdate,
+  updateBudget,
 } = require("../controllers/book_controller");
 
 router.route("/books").post(auth, createBook);
 router.route("/books").get(auth, getBookList);
-router.route("/books").patch(auth, budgetUpdate);
+router.route("/books").patch(auth, updateBudget);
 
 module.exports = router;

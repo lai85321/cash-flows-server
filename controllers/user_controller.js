@@ -76,6 +76,7 @@ const nativeSignin = async (email, password) => {
     }
   }
 };
+
 const userSignin = async (req, res) => {
   const data = req.body;
   let result;
@@ -117,21 +118,21 @@ const userSignin = async (req, res) => {
   return res.status(200).send({ data: response });
 };
 
-const userUpdate = async (req, res) => {
+const updateUser = async (req, res) => {
   try {
     const userId = req.query.id;
     if (req.file) {
       const uploadS3 = await s3Upload(userId, req.file);
       const uploadFile = req.file;
       const updateData = { picture: uploadFile.originalname };
-      const result = await User.userUpdate(updateData, userId);
+      const result = await User.updateUser(updateData, userId);
       return res.status(200).send({ data: result[0] });
     } else {
       const updateData = req.body;
       if (updateData.name.trim() === "") {
         return res.status(400).send({ error: "Please enter a valid name" });
       }
-      const result = await User.userUpdate(updateData, userId);
+      const result = await User.updateUser(updateData, userId);
       return res.status(200).send({ data: result[0] });
     }
   } catch (err) {
@@ -139,18 +140,19 @@ const userUpdate = async (req, res) => {
   }
 };
 
-const userCheck = async (req, res) => {
+const checkUser = async (req, res) => {
   try {
     const userId = req.query.id;
-    const result = await User.userCheck(userId);
+    const result = await User.checkUser(userId);
     return res.status(200).send({ data: result[0] });
   } catch (err) {
     console.log(err);
   }
 };
+
 module.exports = {
   userSignup,
   userSignin,
-  userUpdate,
-  userCheck,
+  updateUser,
+  checkUser,
 };
