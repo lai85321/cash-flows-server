@@ -4,7 +4,7 @@ const createMember = async (member) => {
   return result.insertId;
 };
 
-const AddMember = async (bookId, email) => {
+const addMember = async (bookId, email) => {
   const conn = await pool.getConnection();
   try {
     await conn.query("START TRANSACTION");
@@ -60,7 +60,7 @@ const updateOpenTime = async (openTime, userId, bookId) => {
 
 module.exports = {
   createMember,
-  AddMember,
+  addMember,
   getMemberList,
   deleteMember,
   updateOpenTime,

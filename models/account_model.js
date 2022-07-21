@@ -1,4 +1,3 @@
-const { end } = require("../database");
 const pool = require("../database");
 
 const createAccount = async (account) => {

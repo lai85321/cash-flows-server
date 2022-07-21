@@ -7,12 +7,51 @@ const createSplit = async (splitData) => {
   );
   return result.insertId;
 };
-const createBalancedSplit = async (splitData) => {
-  const [result] = await pool.query(
-    `INSERT INTO split (account_id, user_id, paid_user_id, split, balance,status, split_start, split_end, current_balance, is_calculated,is_handwrited) VALUES ?`,
-    [splitData]
-  );
-  return result.insertId;
+
+const createBalancedSplit = async (bookId, splitData) => {
+  const conn = await pool.getConnection();
+  try {
+    await conn.query("START TRANSACTION");
+    let sql = `UPDATE cash_flows.split AS s
+  INNER JOIN cash_flows.account AS a ON s.account_id = a.id
+  SET s.status = 1
+  WHERE s.is_handwrited = 0 and a.book_id =?`;
+    await conn.query(sql, bookId);
+    const [result] = await conn.query(
+      `INSERT INTO split (account_id, user_id, paid_user_id, split, balance,status, split_start, split_end, current_balance, is_calculated,is_handwrited) VALUES ?`,
+      [splitData]
+    );
+    await conn.query("COMMIT");
+    return result.insertId;
+  } catch (error) {
+    await conn.query("ROLLBACK");
+    console.log(error);
+    return -1;
+  } finally {
+    await conn.release();
+  }
+};
+
+const getBalanceList = async (bookId) => {
+  const sql = `SELECT account.date as date,t.id as splitId, account.id as account_id, a.NAME as user, b.NAME as paidUser, t.balance \
+  FROM split t\
+  JOIN user a ON t.user_id =a.id\
+  JOIN user b ON t.paid_user_id = b.id\
+  INNER JOIN account ON t.account_id = account.id\
+  WHERE  (t.user_id!=t.paid_user_id) and account.book_id=? and t.is_calculated=0\
+  ORDER by date DESC`;
+  const bind = [bookId];
+  const [result] = await pool.query(sql, bind);
+  return result;
+};
+
+const getGroupBalanceList = async (bookId) => {
+  const sql = `SELECT user.id, user.name, sum(split.balance+split.current_balance) as balance FROM cash_flows.split INNER JOIN account ON split.account_id=account.id INNER JOIN user
+  ON split.user_id=user.id  where account.book_id= ? and split.is_calculated =0 group by split.user_id ;
+  `;
+  const bind = [bookId];
+  const [result] = await pool.query(sql, bind);
+  return result;
 };
 
 const getBalanceRange = async (bookId) => {
@@ -23,15 +62,6 @@ const getBalanceRange = async (bookId) => {
   );
   return result;
 };
-const updateSplitStatus = async (bookId) => {
-  //const sql = `UPDATE split SET split.status=1 WHERE split.id in (SELECT split.id FROM cash_flows.split INNER JOIN cash_flows.account ON split.account_id = account.id WHERE is_handwrited = 0 and account.book_id =?)`;
-  const sql = `UPDATE cash_flows.split AS s
-  INNER JOIN cash_flows.account AS a ON s.account_id = a.id
-  SET s.status = 1
-  WHERE s.is_handwrited = 0 and a.book_id =?`;
-  const [result] = await pool.query(sql, bookId);
-  return result.insertId;
-};
 
 const updateSplitIsCalculated = async (splitId, bookId) => {
   const sql = `UPDATE split INNER JOIN account ON split.account_id = account.id SET is_calculated = 1 WHERE split.id < ? and account.book_id=?;`;
@@ -40,7 +70,7 @@ const updateSplitIsCalculated = async (splitId, bookId) => {
   return result.insertId;
 };
 
-const settleSplitStatus = async (bookId, userId, splitId, utcDate) => {
+const updateSettleStatus = async (bookId, userId, splitId, utcDate) => {
   const conn = await pool.getConnection();
   try {
     await conn.query("START TRANSACTION");
@@ -172,8 +202,9 @@ module.exports = {
   createSplit,
   createBalancedSplit,
   getBalanceRange,
-  updateSplitStatus,
+  getBalanceList,
+  getGroupBalanceList,
   updateSplitIsCalculated,
-  settleSplitStatus,
+  updateSettleStatus,
   checkSplitStatus,
 };

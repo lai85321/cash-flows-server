@@ -21,7 +21,7 @@ const nativeSignIn = async (email) => {
   return result;
 };
 
-const userUpdate = async (updateData, userId) => {
+const updateUser = async (updateData, userId) => {
   const conn = await pool.getConnection();
   try {
     await conn.query("START TRANSACTION");
@@ -40,7 +40,7 @@ const userUpdate = async (updateData, userId) => {
   }
 };
 
-const userCheck = async (userId) => {
+const checkUser = async (userId) => {
   const [result] = await pool.query(
     "SELECT * FROM user WHERE provider= 'native' and id=?",
     userId
@@ -50,6 +50,6 @@ const userCheck = async (userId) => {
 module.exports = {
   signUp,
   nativeSignIn,
-  userUpdate,
-  userCheck,
+  updateUser,
+  checkUser,
 };
