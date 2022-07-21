@@ -26,3 +26,5 @@ app.use(function (err, req, res, next) {
 app.listen(PORT, () => {
   console.log(`Server is working on ${PORT}`);
 });
+
+module.exports = app;

@@ -1,4 +1,4 @@
-function dfs(i, amounts, step, list) {
+async function dfs(i, amounts, step, list) {
   if (i === amounts.length) {
     if (step <= minStep) {
       balanceList = [...list];
@@ -30,14 +30,15 @@ function dfs(i, amounts, step, list) {
   }
 }
 
-let minStep = Infinity; //step
+let minStep; //step
 let balanceList = [];
 function backTrack(amounts) {
   dfs(0, amounts, 0, []);
   return balanceList;
 }
 
-function balance(amounts) {
+async function balance(amounts) {
+  minStep = Infinity;
   const balanceList = backTrack(amounts);
   let procedures = [];
   for (let i = 0; i < balanceList.length; i++) {
