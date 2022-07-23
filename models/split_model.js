@@ -23,9 +23,9 @@ const createBalancedSplit = async (bookId, splitData) => {
     );
     await conn.query("COMMIT");
     return result.insertId;
-  } catch (error) {
+  } catch (err) {
     await conn.query("ROLLBACK");
-    console.log(error);
+    console.log(err);
     return -1;
   } finally {
     await conn.release();
@@ -179,9 +179,9 @@ const updateSettleStatus = async (bookId, userId, splitId, utcDate) => {
     }
     await conn.query("COMMIT");
     return result;
-  } catch (error) {
+  } catch (err) {
     await conn.query("ROLLBACK");
-    console.log(error);
+    console.log(err);
     return -1;
   } finally {
     await conn.release();

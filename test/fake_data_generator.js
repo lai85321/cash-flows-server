@@ -127,7 +127,6 @@ async function truncateFakeData() {
   ];
   for (let table of tables) {
     await truncateTable(table);
-    console.log(`delete data in ${table}`);
   }
   return;
 }

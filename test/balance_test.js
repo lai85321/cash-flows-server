@@ -20,7 +20,6 @@ describe("balance", () => {
       .get("/api/1.0/balance?bookId=1")
       .set("Authorization", `Bearer ${accessToken}`);
     const data = res.body.data;
-    console.log(data);
     expect(data[0].details.length).equal(2);
   });
   it("get balance1", async () => {
@@ -28,7 +27,6 @@ describe("balance", () => {
       .get("/api/1.0/balance?bookId=1")
       .set("Authorization", `Bearer ${accessToken}`);
     const data = res.body.data;
-    console.log(data);
     expect(data[1].details.length).equal(2);
   });
   it("get balance1", async () => {
@@ -36,7 +34,6 @@ describe("balance", () => {
       .get("/api/1.0/balance?bookId=2")
       .set("Authorization", `Bearer ${accessToken}`);
     const data = res.body.data;
-    console.log(data);
     expect(data.length).equal(0);
   });
 

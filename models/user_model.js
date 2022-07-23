@@ -31,9 +31,9 @@ const updateUser = async (updateData, userId) => {
     ]);
     await conn.query("COMMIT");
     return result;
-  } catch (error) {
+  } catch (err) {
     await conn.query("ROLLBACK");
-    console.log(error);
+    console.log(err);
     return -1;
   } finally {
     await conn.release();

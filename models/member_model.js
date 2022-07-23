@@ -22,9 +22,9 @@ const addMember = async (bookId, email) => {
     const [result] = await conn.query(sql, bind);
     await conn.query("COMMIT");
     return result;
-  } catch (error) {
+  } catch (err) {
     await conn.query("ROLLBACK");
-    console.log(error);
+    console.log(err);
     return {
       error: "User Already Exists",
       status: 403,
