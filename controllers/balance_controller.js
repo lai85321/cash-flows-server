@@ -1,6 +1,7 @@
 const Account = require("../models/account_model");
 const Split = require("../models/split_model");
 const balance = require("../util/getBalance");
+const convertTimezone = require("../util/convert_tz");
 const _ = require("lodash");
 
 const getBalanceList = async (req, res) => {
@@ -11,15 +12,15 @@ const getBalanceList = async (req, res) => {
     let splitIds = [];
     let dates = [];
     for (let i = 0; i < balances.length; i++) {
-      balances[i].date.setHours(balances[i].date.getHours() + 8);
-      dates.push(balances[i].date.toString().slice(0, 15));
+      balances[i].date = convertTimezone(balances[i].date);
+      dates.push(balances[i].date);
       splitIds.push(parseInt(balances[i].splitId));
       details.push(
         `${balances[i].user} owes ${balances[i].paidUser} $${balances[i].balance}`
       );
     }
     const balanceMaps = await _.groupBy(balances, (b) => {
-      return b.date.toString().slice(0, 15);
+      return b.date;
     });
     const dateKeys = Object.keys(balanceMaps);
     let data = [];
@@ -48,7 +49,7 @@ const getGroupBalanceList = async (req, res) => {
     const now = new Date();
     const utcDate = new Date(now.toUTCString().slice(0, -4));
     const bookId = parseInt(req.query.bookId);
-    const userId = req.query.userId;
+    const userId = parseInt(req.query.userId);
     const response = await Split.getGroupBalanceList(bookId);
     const userIds = response.map((item) => parseInt(item.id));
     const users = response.map((item) => item.name);
@@ -100,11 +101,11 @@ const getGroupBalanceList = async (req, res) => {
         0,
       ];
     });
-    splitData = [...splitOweData, ...splitLendData];
+    const splitData = [...splitOweData, ...splitLendData];
     const splitId = await Split.createBalancedSplit(bookId, splitData);
     await Split.updateSplitIsCalculated(splitId, bookId);
     const details = [];
-    split.forEach((item, idx) => {
+    split.forEach((item) => {
       let oweName = users[item[0]];
       let lendName = users[item[1]];
       details.push(`${oweName} owes ${lendName} $${item[2]}`);
@@ -115,9 +116,10 @@ const getGroupBalanceList = async (req, res) => {
         detail: item,
       };
     });
+    const date = convertTimezone(utcDate);
     const data = [
       {
-        date: utcDate.toString(),
+        date: date,
         details: responseData,
       },
     ];
@@ -149,7 +151,9 @@ const updateSplitStatus = async (req, res) => {
         `${balances[i].user} owes ${balances[i].paidUser} $${balances[i].balance}`
       );
     }
-    const balanceMaps = await _.groupBy(balances, (b) => b.date);
+    const balanceMaps = await _.groupBy(balances, (b) =>
+      b.date.toString().slice(0, 15)
+    );
     const dateKeys = Object.keys(balanceMaps);
     let data = [];
     let hash = {};

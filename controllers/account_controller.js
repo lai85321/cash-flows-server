@@ -162,26 +162,27 @@ const getAccountDetail = async (req, res) => {
     const accountId = req.query.id;
     const result = await Account.getAccountDetail(accountId);
     let data = {};
+    const { amount, paid_name, note, tag } = result[0];
+    let date = result[0].date;
+    date = date.setHours(date.getHours() + 8);
     if (result[0].split === null) {
-      const { amount, paid_name, note, tag, date } = result[0];
       data = {
         amount: amount,
         paidName: paid_name,
         note: note,
         tag: tag,
-        date: date.setHours(date.getHours() + 8),
+        date: date,
       };
     } else {
       const splits = result.map((item) => {
         return { splitName: item.split_name, split: item.split };
       });
-      const { amount, paid_name, note, tag, date } = result[0];
       data = {
         amount: amount,
         paidName: paid_name,
         note: note,
         tag: tag,
-        date: date.setHours(date.getHours() + 8),
+        date: date,
         splits: splits,
       };
     }
