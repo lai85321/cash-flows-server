@@ -8,11 +8,11 @@ A website that helps users record and split payments, and tracks cash flow.
 **Test Accounts**:
 
 - Account 1
-  - Email:
-  - password:
+  - Email: test1@test.com
+  - password: test
 - Account 2
-  - Email:
-  - password:
+  - Email: test2@test.com
+  - password: test
 
 ## Table of content
 
