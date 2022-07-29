@@ -46,10 +46,11 @@ https://user-images.githubusercontent.com/42411062/181430977-9c6a142e-c5a1-4c26-
 
 ## Algorithm
 
-Utilize this algorithm to optimize the money exchange process
-
+#### Utilize this algorithm to optimize the money exchange process
+We assume that postive number as the amounts of borrowed money, and the negative number as the amounts of lent money.
+If A lent B 100, the status between A and B can be expressed as [-100, 100].
 - Psuedo code
-  <img width="1000" alt="psuedo" src="https://user-images.githubusercontent.com/42411062/181548420-66a6a548-bc80-4bd3-b411-489e9ba82cec.png">
+  <img width="1000" alt="截圖 2022-07-29 下午2 25 35" src="https://user-images.githubusercontent.com/42411062/181696565-08a6a93f-7f44-4171-a7e0-8ec7d51daca7.png">
 
 - Example
   <img width="1000" alt="process" src="https://user-images.githubusercontent.com/42411062/181569353-c152b675-0169-406f-986d-9147e14503dc.png">
@@ -103,4 +104,5 @@ Utilize this algorithm to optimize the money exchange process
 ## Contact
 
 [Tina Lei](https://github.com/lai85321)
+
 Email: weiiting.lei@gmail.com
