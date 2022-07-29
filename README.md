@@ -17,12 +17,12 @@ A website that helps users record and split payments, and tracks cash flow.
 
 ## Table of content
 
-- [Feature](https://github.com/lai85321/cash-flows-server/edit/main/README.md#feature)
-- [Algorithm](https://github.com/lai85321/cash-flows-server/edit/main/README.md#algorithm)
-- [Architecture](https://github.com/lai85321/cash-flows-server/edit/main/README.md#architecture)
-- [Database Schema](https://github.com/lai85321/cash-flows-server/edit/main/README.md#database-Schema)
-- [Technologies](https://github.com/lai85321/cash-flows-server/edit/main/README.md#technologies)
-- [Contact](https://github.com/lai85321/cash-flows-server/edit/main/README.md#contact)
+- [Feature](https://github.com/lai85321/cash-flows-server#feature)
+- [Algorithm](https://github.com/lai85321/cash-flows-server#algorithm)
+- [Architecture](https://github.com/lai85321/cash-flows-server#architecture)
+- [Database Schema](https://github.com/lai85321/cash-flows-server#database-Schema)
+- [Technologies](https://github.com/lai85321/cash-flows-server#technologies)
+- [Contact](https://github.com/lai85321/cash-flows-server#contact)
 
 ## Feature
 
