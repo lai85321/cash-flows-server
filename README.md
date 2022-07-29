@@ -50,7 +50,7 @@ https://user-images.githubusercontent.com/42411062/181430977-9c6a142e-c5a1-4c26-
 We assume that postive number as the amounts of borrowed money, and the negative number as the amounts of lent money.
 If A lent B 100, the status between A and B can be expressed as [-100, 100].
 - Psuedo code
-  <img width="1000" alt="截圖 2022-07-29 下午2 25 35" src="https://user-images.githubusercontent.com/42411062/181696565-08a6a93f-7f44-4171-a7e0-8ec7d51daca7.png">
+  <img width="1000" alt="pseudo" src="https://user-images.githubusercontent.com/42411062/181731148-21dc3e18-594e-4f69-a0e7-834c80cd2ca9.png">
 
 - Example
   <img width="1000" alt="process" src="https://user-images.githubusercontent.com/42411062/181569353-c152b675-0169-406f-986d-9147e14503dc.png">
