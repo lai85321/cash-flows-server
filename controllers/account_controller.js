@@ -21,7 +21,9 @@ const createAccount = async (req, res) => {
   if (note.trim() === "") {
     return res.status(400).send({ error: "Please enter a valid note" });
   }
-
+  if ((amount = "" || amount < 1 || amount >= 1000000)) {
+    return res.status(400).send({ error: "Please enter a valid amount" });
+  }
   const data = [
     [
       parseInt(bookId),
