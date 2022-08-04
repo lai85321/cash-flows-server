@@ -27,21 +27,35 @@ A website that helps users record and split payments, and tracks cash flow.
 ## Feature
 
 - Record payment and split money
+  
+  - An easy way to record user payments in the same book and split the money accordingly.
 
 https://user-images.githubusercontent.com/42411062/181429141-86e47681-c52a-4087-bae4-b6edd6882f28.mov
 
-- Optimize the money exchange process
+- Find an efficient process to exchange money
+  
+  - Optimized the money exchange process by using a backtracking algorithm to minimize exchange steps.
 
 https://user-images.githubusercontent.com/42411062/181430724-c4da696d-f95b-4f62-8e3b-e6321ef456e0.mov
 
 - Notify relevant users when stakeholders settle the money
+  
+  - When an order is settled, the relevant user will be notified when the page is refreshed
 
 https://user-images.githubusercontent.com/42411062/181430977-9c6a142e-c5a1-4c26-a494-729742791255.mov
 
 - Display the expense book with the current bill status
+
+  - Show the tag, payment amount, paid user and current bill status.
+  
+  - The red dot means this bill has not been settled, and green dot means it is settled.
   <img width="1000" alt="account" src="https://user-images.githubusercontent.com/42411062/181431361-37eef3e3-8c56-4667-ac46-8ea91a563aa3.png">
 
 - Plot chart of users' consumption behavior
+  - The first chart in the figure is a pie chart which shows the amount spent in different categories.
+  
+  - The second chart in the figure is a line chart which shows the amount spent every day.
+  
   <img width="1000" alt="dashboard" src="https://user-images.githubusercontent.com/42411062/181431332-fb80a6a0-16de-4c08-8bd2-cadd6a79ff89.png">
 
 ## Algorithm
