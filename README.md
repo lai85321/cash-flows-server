@@ -67,7 +67,7 @@ If A lent B 100, the status between A and B can be expressed as [-100, 100].
   <img width="1000" alt="pseudo" src="https://user-images.githubusercontent.com/42411062/181731148-21dc3e18-594e-4f69-a0e7-834c80cd2ca9.png">
 
 - Example
-  <img width="1000" alt="process" src="https://user-images.githubusercontent.com/42411062/181569353-c152b675-0169-406f-986d-9147e14503dc.png">
+  <img width="1000" alt="process" src="https://user-images.githubusercontent.com/42411062/182981966-2f8c9631-bac2-4058-9f98-723b7910c223.png">
 
 ## Architecture
 
