@@ -36,6 +36,7 @@ https://user-images.githubusercontent.com/42411062/181429141-86e47681-c52a-4087-
   
   - Optimized the money exchange process by using a backtracking algorithm to minimize exchange steps.
 
+
 https://user-images.githubusercontent.com/42411062/181430724-c4da696d-f95b-4f62-8e3b-e6321ef456e0.mov
 
 - Notify relevant users when stakeholders settle the money
@@ -64,7 +65,7 @@ https://user-images.githubusercontent.com/42411062/181430977-9c6a142e-c5a1-4c26-
 We assume that postive number as the amounts of borrowed money, and the negative number as the amounts of lent money.
 If A lent B 100, the status between A and B can be expressed as [-100, 100].
 - Psuedo code
-  <img width="1000" alt="pseudo" src="https://user-images.githubusercontent.com/42411062/181731148-21dc3e18-594e-4f69-a0e7-834c80cd2ca9.png">
+  <img width="1000" alt="pseudo" src="https://user-images.githubusercontent.com/42411062/183320420-a1833091-639e-454b-b5a7-2a5660a20016.png">
 
 - Example
   <img width="1000" alt="process" src="https://user-images.githubusercontent.com/42411062/182981966-2f8c9631-bac2-4058-9f98-723b7910c223.png">
