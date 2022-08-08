@@ -71,8 +71,7 @@ If A lent B 100, the status between A and B can be expressed as [-100, 100].
   <img width="1000" alt="process" src="https://user-images.githubusercontent.com/42411062/182981966-2f8c9631-bac2-4058-9f98-723b7910c223.png">
 
 ## Architecture
-
-![](https://i.imgur.com/D8NE9Vk.png)
+  <img width="1000" alt="architecture" src="https://user-images.githubusercontent.com/42411062/183321274-0534c678-3b50-4983-8c23-854ddb1ad140.png">
 
 ## Database Schema
 
